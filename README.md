@@ -43,6 +43,44 @@ sts info --repo .
 apr review --repo . --title "Refactor models" --description "Tighten validation."
 ```
 
+### 60-second integrated demo
+
+Wire three of the products together in one Python session — model the repo, trace an agent, attribute LLM cost, and gate a tool call with a policy:
+
+```python
+from agtrace import default_tracer
+from agentguard import Policy, Rule, ToolCall, enforce, with_agent
+from agentguard.baseline import baseline_starter_policy
+from tokencost.middleware import chain, default_sink, to_active_agtrace_span
+from tokencost.models import TokenUsage
+from datetime import UTC, datetime
+
+tracer = default_tracer()
+sink   = chain(default_sink(), to_active_agtrace_span())
+policy = Policy(name="demo", rules=[*baseline_starter_policy().rules])
+
+with tracer.span("agent.run", kind="agent"), with_agent("demo-bot"):
+    with tracer.span("llm.call", kind="prompt"):
+        sink(TokenUsage(timestamp=datetime.now(UTC),
+                        provider="anthropic", model="claude-sonnet-4-6",
+                        input_tokens=1234, output_tokens=567,
+                        cost_micros=12000, feature="demo"))
+
+    decision = enforce(policy, ToolCall(tool="stripe.charge",
+                                        arguments={"amount": 100}),
+                       audit="audit.jsonl")
+    print(decision.status, decision.reason)  # → 'deny' + reason
+```
+
+Then dump the trace tree to confirm everything stitched together:
+
+```bash
+agtrace dump --from-file .agtrace/traces.jsonl
+cat audit.jsonl
+```
+
+Five products. One coherent run. No agents required.
+
 > **Naming:** distribution names on PyPI are namespaced under `devtrust-` to avoid collisions with common short names. Python imports and CLI commands stay short — once installed, you `import repox` and run `repox build .` exactly as you'd expect.
 
 ---
