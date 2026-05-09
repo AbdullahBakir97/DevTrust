@@ -1,10 +1,49 @@
 # DevTrust
 
+[![CI](https://github.com/AbdullahBakir97/DevTrust/actions/workflows/ci.yml/badge.svg)](https://github.com/AbdullahBakir97/DevTrust/actions/workflows/ci.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![PyPI: 9 packages](https://img.shields.io/badge/PyPI-9_packages-3776AB?logo=pypi&logoColor=white)](https://pypi.org/search/?q=devtrust)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-black)](https://github.com/astral-sh/ruff)
+[![Type-checked: mypy --strict](https://img.shields.io/badge/mypy-strict-blue)](https://mypy.readthedocs.io/)
+
 > The trust stack for AI-era engineering — from PR to production.
 
 DevTrust is a connected platform of small, opinionated, production-grade tools that give engineering teams a coherent answer to a simple question: **as AI starts to write more of the code, how do we keep trust in what ships?**
 
-Each tool stands alone, ships to PyPI independently, and works with nothing but `pip install`. They also compose: the architecture model from one product feeds the test selector in the next, which feeds the PR reviewer after that, which feeds incident response when something breaks. Three full waves are shipped; a fourth is queued.
+Each tool stands alone, ships to PyPI independently, and works with nothing but `pip install`. They also compose: the architecture model from one product feeds the test selector in the next, which feeds the PR reviewer after that, which feeds incident response when something breaks. Three full waves are shipped; a fourth is in progress.
+
+---
+
+## Quick start
+
+All eight packages are live on PyPI.
+
+```bash
+pip install devtrust-repox       # codebase architecture model
+pip install devtrust-sts         # smart test selector
+pip install devtrust-apr         # AI-era PR reviewer
+pip install devtrust-agtrace     # agent-aware tracing SDK
+pip install devtrust-whychanged  # production diff-detective
+pip install devtrust-tokencost   # LLM cost attribution
+```
+
+GitHub Apps for the CI surfaces:
+
+```bash
+pip install devtrust-sts-app     # GitHub App — sts on every PR
+pip install devtrust-apr-app     # GitHub App — apr on every PR
+```
+
+Try one:
+
+```bash
+repox build .
+sts info --repo .
+apr review --repo . --title "Refactor models" --description "Tighten validation."
+```
+
+> **Naming:** distribution names on PyPI are namespaced under `devtrust-` to avoid collisions with common short names. Python imports and CLI commands stay short — once installed, you `import repox` and run `repox build .` exactly as you'd expect.
 
 ---
 
@@ -181,9 +220,18 @@ What Cloud adds on top of the OSS:
 
 | Wave | State | Packages |
 |---|---|---|
-| Wave 1 (codebase understanding) | **Shipped** | `repox` 0.4.0, `sts` 0.0.3, `apr` 0.2.0 |
-| Wave 2 (ship surfaces) | **Shipped** | `sts-app` 0.0.3, `apr-app` 0.0.1 |
-| Wave 3 (open & run) | **Shipped** | `agtrace` 0.0.2, `whychanged` 0.1.0, `tokencost` 0.0.3 |
-| Wave 4 (compliance & governance) | Spec only | `agentguard` (pending) |
+| Wave 1 (codebase understanding) | **Shipped** · on PyPI | `devtrust-repox` 0.4.0, `devtrust-sts` 0.0.3, `devtrust-apr` 0.2.0 |
+| Wave 2 (ship surfaces) | **Shipped** · on PyPI | `devtrust-sts-app` 0.0.3, `devtrust-apr-app` 0.0.1 |
+| Wave 3 (open & run) | **Shipped** · on PyPI | `devtrust-agtrace` 0.0.2, `devtrust-whychanged` 0.1.0, `devtrust-tokencost` 0.0.3 |
+| Wave 4 (compliance & governance) | In progress | `devtrust-agentguard` (scaffold) |
+
+### Spec'd but not yet implemented
+
+These products have written specs in `src/products/NN-name/PRODUCT.md` but no code yet. PRs and discussion welcome:
+
+- `04-ci-local` — local CI runner (spec only)
+- `05-dep-upgrade-pilot` — dependency upgrade pilot (spec only)
+
+`00-shared-platform/` is intentionally not a buildable package — it's the design doc for the shared infrastructure layer (auth, billing, runtime, dashboard) that lives in **DevTrust Cloud**, the commercial counterpart to this OSS monorepo. See [DevTrust Cloud — coming soon](#devtrust-cloud--coming-soon) above.
 
 License: Apache-2.0. Owner: Abdullah Bakir ([github.com/AbdullahBakir97](https://github.com/AbdullahBakir97)).

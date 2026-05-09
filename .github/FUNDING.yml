@@ -1,0 +1,19 @@
+# Adds a "Sponsor" button to the repo header. Uncomment / fill the line(s)
+# you actually want once you've enabled the corresponding provider.
+#
+# GitHub Sponsors: enable at github.com/sponsors -> Become a sponsored
+# developer. Once approved, set:
+github: [AbdullahBakir97]
+
+# Other supported providers (uncomment to enable):
+# patreon: yourname
+# open_collective: devtrust
+# ko_fi: yourname
+# tidelift: pypi/devtrust-repox      # one row per package; not great for monorepos
+# liberapay: yourname
+# issuehunt: yourname
+# community_bridge: project-name
+# polar: yourname
+# buy_me_a_coffee: yourname
+# thanks_dev: u/gh/yourname
+# custom: ["https://devtrust.dev/sponsor"]

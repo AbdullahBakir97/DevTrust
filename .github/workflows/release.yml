@@ -32,6 +32,7 @@ on:
       - "devtrust-whychanged-v*"
       - "devtrust-tokencost-v*"
       - "devtrust-agtrace-v*"
+      - "devtrust-agentguard-v*"
   workflow_dispatch:
     inputs:
       tag:
@@ -70,7 +71,7 @@ jobs:
           # downstream `uv build --package <PKG>` and the matching
           # `pypi-<PKG>` GitHub Environment line up.
           TAG="${{ github.event.inputs.tag || github.ref_name }}"
-          PATTERN='^(devtrust-(repox|sts|sts-app|apr|apr-app|whychanged|tokencost|agtrace))-v([0-9].*)$'
+          PATTERN='^(devtrust-(repox|sts|sts-app|apr|apr-app|whychanged|tokencost|agtrace|agentguard))-v([0-9].*)$'
           if [[ "$TAG" =~ $PATTERN ]]; then
             PKG="${BASH_REMATCH[1]}"
             VER="${BASH_REMATCH[3]}"

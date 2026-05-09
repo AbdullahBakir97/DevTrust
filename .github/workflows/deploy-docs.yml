@@ -1,0 +1,78 @@
+name: Deploy landing → Vercel
+
+# Builds and deploys docs/landing/ to Vercel on every push to main that
+# touches the landing directory or this workflow file. Manual runs via
+# workflow_dispatch also fire a production deploy.
+#
+# Setup required (one-time):
+#
+#   1. Create a Vercel project linked to AbdullahBakir97/DevTrust:
+#      - Vercel dashboard -> Add New -> Project -> Import this repo.
+#      - Build & Output Settings: leave blank (no framework, static HTML).
+#      - Root Directory: docs/landing
+#      - Disable Vercel's automatic Git deployments so this Action is the
+#        single source of truth (Project Settings -> Git -> "Connected Git
+#        Repository" -> Disable production / preview deployments).
+#
+#   2. Grab three values from Vercel:
+#      - VERCEL_TOKEN       -> Account Settings -> Tokens -> Create
+#      - VERCEL_ORG_ID      -> Account Settings -> General -> Your ID
+#      - VERCEL_PROJECT_ID  -> Project Settings -> General -> Project ID
+#
+#   3. Add all three as GitHub Actions secrets:
+#      Repo Settings -> Secrets and variables -> Actions -> New
+#      repository secret. Names must match exactly.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/landing/**"
+      - ".github/workflows/deploy-docs.yml"
+  workflow_dispatch:
+
+concurrency:
+  # Coalesce overlapping deploys on the same branch -- only the latest matters.
+  group: deploy-docs-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_COLOR: "1"
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy:
+    name: Deploy landing (production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel environment (production)
+        # Downloads the project's Vercel settings into ./.vercel/.
+        # We run from docs/landing because that's the project's Root Directory.
+        working-directory: docs/landing
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build prebuilt artifact
+        working-directory: docs/landing
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy prebuilt artifact to production
+        id: deploy
+        working-directory: docs/landing
+        run: |
+          URL="$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Landing deployed::$URL"
+
+      - name: Summary
+        run: |
+          echo "## 🚀 Landing deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Production URL: ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
