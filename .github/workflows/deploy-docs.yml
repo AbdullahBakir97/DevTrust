@@ -53,19 +53,20 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
+      # IMPORTANT: we run vercel from the REPO ROOT (no `working-directory`),
+      # not from docs/landing/. The Vercel project itself is configured with
+      # Root Directory = docs/landing, so Vercel CLI knows where to find the
+      # source files. Doing both (`working-directory` here AND Root Directory
+      # in Vercel) was producing a doubled path: docs/landing/docs/landing.
+
       - name: Pull Vercel environment (production)
-        # Downloads the project's Vercel settings into ./.vercel/.
-        # We run from docs/landing because that's the project's Root Directory.
-        working-directory: docs/landing
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build prebuilt artifact
-        working-directory: docs/landing
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy prebuilt artifact to production
         id: deploy
-        working-directory: docs/landing
         run: |
           URL="$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})"
           echo "url=$URL" >> "$GITHUB_OUTPUT"
