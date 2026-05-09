@@ -3,7 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "apr"
+# `apr` collides with the Apache Portable Runtime on PyPI; namespaced
+# to avoid conflict. Module name stays `apr`.
+name = "devtrust-apr"
 version = "0.2.0"
 description = "Agent-PR Reviewer — deterministic + AI-pattern review for pull requests."
 readme = "README.md"
@@ -30,7 +32,7 @@ dependencies = [
     "rich>=13.9.0",
     "pydantic>=2.10.0",
     # apr consumes Repo X-ray's architecture model for file context.
-    "repox",
+    "devtrust-repox",
     # JS / TS rule pack via tree-sitter (mirrors repox's pin).
     "tree-sitter>=0.23.0",
     "tree-sitter-language-pack>=0.4.0,<1.0",
@@ -58,4 +60,4 @@ Issues = "https://github.com/AbdullahBakir97/DevTrust/issues"
 packages = ["src/apr"]
 
 [tool.uv.sources]
-repox = { workspace = true }
+devtrust-repox = { workspace = true }

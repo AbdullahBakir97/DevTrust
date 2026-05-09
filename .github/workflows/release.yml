@@ -24,18 +24,18 @@ name: Release
 on:
   push:
     tags:
-      - "repox-v*"
-      - "sts-v*"
-      - "sts-app-v*"
-      - "apr-v*"
-      - "apr-app-v*"
-      - "whychanged-v*"
-      - "tokencost-v*"
-      - "agtrace-v*"
+      - "devtrust-repox-v*"
+      - "devtrust-sts-v*"
+      - "devtrust-sts-app-v*"
+      - "devtrust-apr-v*"
+      - "devtrust-apr-app-v*"
+      - "devtrust-whychanged-v*"
+      - "devtrust-tokencost-v*"
+      - "devtrust-agtrace-v*"
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag to release from (e.g. repox-v0.4.0)"
+        description: "Tag to release from (e.g. devtrust-repox-v0.4.0)"
         required: true
 
 concurrency:
@@ -65,12 +65,17 @@ jobs:
         id: parse
         shell: bash
         run: |
+          # Tag format: devtrust-<short>-v<semver>
+          # Captures full distribution name (devtrust-<short>) as PKG so
+          # downstream `uv build --package <PKG>` and the matching
+          # `pypi-<PKG>` GitHub Environment line up.
           TAG="${{ github.event.inputs.tag || github.ref_name }}"
-          if [[ "$TAG" =~ ^(repox|sts|sts-app|apr|apr-app|whychanged|tokencost|agtrace)-v([0-9].*)$ ]]; then
+          PATTERN='^(devtrust-(repox|sts|sts-app|apr|apr-app|whychanged|tokencost|agtrace))-v([0-9].*)$'
+          if [[ "$TAG" =~ $PATTERN ]]; then
             PKG="${BASH_REMATCH[1]}"
-            VER="${BASH_REMATCH[2]}"
+            VER="${BASH_REMATCH[3]}"
           else
-            echo "::error::tag $TAG does not match <package>-v<version>"
+            echo "::error::tag $TAG does not match devtrust-<short>-v<version>"
             exit 1
           fi
           echo "package=$PKG" >> "$GITHUB_OUTPUT"

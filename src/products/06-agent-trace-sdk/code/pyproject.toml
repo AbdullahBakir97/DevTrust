@@ -3,7 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "agtrace"
+# Namespaced for platform consistency; module name stays `agtrace`.
+name = "devtrust-agtrace"
 version = "0.0.2"
 description = "Agent-aware tracing: spans, events, and tool calls for LLM-driven workflows."
 readme = "README.md"

@@ -276,9 +276,15 @@
   <div class="wrap">
     <h2>Install one. Or all eight.</h2>
     <p class="section-lede">Each package versions independently. Picking just one doesn't drag the rest in.</p>
-<pre><code>pip install repox sts apr agtrace whychanged tokencost
+<pre><code>pip install devtrust-repox devtrust-sts devtrust-apr \
+            devtrust-agtrace devtrust-whychanged devtrust-tokencost
 # or just the GitHub Apps:
-pip install sts-app apr-app</code></pre>
+pip install devtrust-sts-app devtrust-apr-app</code></pre>
+<p style="color:var(--fg-faint);font-size:0.88rem;margin-top:0.75rem;">
+  PyPI distribution names are namespaced under <code>devtrust-</code>;
+  Python imports and CLI commands stay short (<code>import repox</code>,
+  <code>repox build .</code>).
+</p>
   </div>
 </section>
 

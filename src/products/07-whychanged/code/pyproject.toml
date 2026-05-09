@@ -3,7 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "whychanged"
+# Namespaced for platform consistency; module name stays `whychanged`.
+name = "devtrust-whychanged"
 version = "0.1.0"
 description = "Production diff-detective: when something breaks, what actually changed?"
 readme = "README.md"

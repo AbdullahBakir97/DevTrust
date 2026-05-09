@@ -3,7 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "tokencost"
+# Namespaced for platform consistency; module name stays `tokencost`.
+name = "devtrust-tokencost"
 version = "0.0.3"
 description = "Financial-grade attribution for LLM spend: per-feature, per-team, per-customer."
 readme = "README.md"

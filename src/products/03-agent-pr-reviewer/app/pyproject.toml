@@ -3,7 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "apr-app"
+# Namespaced to match the platform; module name stays `apr_app`.
+name = "devtrust-apr-app"
 version = "0.0.1"
 description = "GitHub App that runs Agent-PR Reviewer on pull requests and posts findings as a sticky comment."
 readme = "README.md"
@@ -34,7 +35,7 @@ dependencies = [
     "pydantic-settings>=2.5.0",
     "pyjwt[crypto]>=2.9.0",
     # Workspace dep on the apr engine.
-    "apr",
+    "devtrust-apr",
 ]
 
 [project.scripts]
@@ -51,4 +52,4 @@ Issues = "https://github.com/AbdullahBakir97/DevTrust/issues"
 packages = ["src/apr_app"]
 
 [tool.uv.sources]
-apr = { workspace = true }
+devtrust-apr = { workspace = true }

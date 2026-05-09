@@ -12,28 +12,30 @@ Each tool stands alone, ships to PyPI independently, and works with nothing but 
 
 Eight installable packages across three shipped waves, each with its own `pyproject.toml`, `README.md`, `CHANGELOG.md`, tests, and PyPI release.
 
+> **Naming convention:** distribution names on PyPI are namespaced under `devtrust-` (e.g. `pip install devtrust-repox`) to avoid collisions with common short names. The Python module names and CLI commands stay short — once installed, you `import repox` and run `repox build .` exactly as you'd expect.
+
 ### Wave 1 — codebase understanding
 
-| Package | What it does | Latest |
-|---|---|---|
-| [`repox`](src/products/01-repo-xray/code/) | Build a portable architecture model of any codebase: files, imports, symbols, and function-call edges across Python + JavaScript + TypeScript via tree-sitter. Emits `.repox/architecture.{json,md}` that downstream tools consume. | **0.4.0** |
-| [`sts`](src/products/02-smart-test-selector/code/) | Smart Test Selector: given a code change, decide which tests must run. Transitive-import-aware, framework-detection (pytest, unittest, jest, vitest), reads `repox` artifacts when available. | **0.0.3** |
-| [`apr`](src/products/03-agent-pr-reviewer/code/) | Agent-PR Reviewer: deterministic + AI-pattern review for pull requests. Python + JS/TS rule packs, plus opt-in LLM-backed `ai-review:diff-comprehension` (Anthropic) and a deterministic `ai-review:hallucinated-symbol` rule that walks `repox` call edges to flag invented function calls. | **0.2.0** |
+| PyPI package | CLI / module | What it does | Latest |
+|---|---|---|---|
+| `devtrust-repox` | [`repox`](src/products/01-repo-xray/code/) | Build a portable architecture model of any codebase: files, imports, symbols, and function-call edges across Python + JavaScript + TypeScript via tree-sitter. Emits `.repox/architecture.{json,md}` that downstream tools consume. | **0.4.0** |
+| `devtrust-sts` | [`sts`](src/products/02-smart-test-selector/code/) | Smart Test Selector: given a code change, decide which tests must run. Transitive-import-aware, framework-detection (pytest, unittest, jest, vitest), reads `repox` artifacts when available. | **0.0.3** |
+| `devtrust-apr` | [`apr`](src/products/03-agent-pr-reviewer/code/) | Agent-PR Reviewer: deterministic + AI-pattern review for pull requests. Python + JS/TS rule packs, plus opt-in LLM-backed `ai-review:diff-comprehension` (Anthropic) and a deterministic `ai-review:hallucinated-symbol` rule that walks `repox` call edges to flag invented function calls. | **0.2.0** |
 
 ### Wave 2 — ship surfaces
 
-| Package | What it does | Latest |
-|---|---|---|
-| [`sts-app`](src/products/02-smart-test-selector/app/) | GitHub App for `sts`. JWT-signed installation tokens, HMAC webhook verification, tarball clone (no `git` binary needed), runs `repox` + `sts` end-to-end and posts a sticky PR comment with the verdict. | **0.0.3** |
-| [`apr-app`](src/products/03-agent-pr-reviewer/app/) | GitHub App for `apr`. Same shape as `sts-app` — webhook receiver, GitHub App auth, sticky PR comment with findings. | **0.0.1** |
+| PyPI package | CLI / module | What it does | Latest |
+|---|---|---|---|
+| `devtrust-sts-app` | [`sts-app`](src/products/02-smart-test-selector/app/) | GitHub App for `sts`. JWT-signed installation tokens, HMAC webhook verification, tarball clone (no `git` binary needed), runs `repox` + `sts` end-to-end and posts a sticky PR comment with the verdict. | **0.0.3** |
+| `devtrust-apr-app` | [`apr-app`](src/products/03-agent-pr-reviewer/app/) | GitHub App for `apr`. Same shape as `sts-app` — webhook receiver, GitHub App auth, sticky PR comment with findings. | **0.0.1** |
 
 ### Wave 3 — open & run
 
-| Package | What it does | Latest |
-|---|---|---|
-| [`agtrace`](src/products/06-agent-trace-sdk/code/) | Agent-aware tracing for LLM-driven workflows: spans, events, tool calls, JSONL append-only event store, ContextVar-based attribution that's safe across threads + async. | **0.0.2** |
-| [`whychanged`](src/products/07-whychanged/code/) | Production diff-detective for incident response: when something breaks, rank the changes most likely to be the culprit. Pluggable `ChangeProvider` interface (git history + GitHub Deployments shipped). | **0.1.0** |
-| [`tokencost`](src/products/08-tokencost/code/) | Financial-grade attribution for LLM spend: capture every Anthropic / OpenAI call with team / user / feature attribution, money in integer micro-USD (no float drift), JSONL store + cost report. Composes with `agtrace` so cost attaches to the active agent span. | **0.0.3** |
+| PyPI package | CLI / module | What it does | Latest |
+|---|---|---|---|
+| `devtrust-agtrace` | [`agtrace`](src/products/06-agent-trace-sdk/code/) | Agent-aware tracing for LLM-driven workflows: spans, events, tool calls, JSONL append-only event store, ContextVar-based attribution that's safe across threads + async. | **0.0.2** |
+| `devtrust-whychanged` | [`whychanged`](src/products/07-whychanged/code/) | Production diff-detective for incident response: when something breaks, rank the changes most likely to be the culprit. Pluggable `ChangeProvider` interface (git history + GitHub Deployments shipped). | **0.1.0** |
+| `devtrust-tokencost` | [`tokencost`](src/products/08-tokencost/code/) | Financial-grade attribution for LLM spend: capture every Anthropic / OpenAI call with team / user / feature attribution, money in integer micro-USD (no float drift), JSONL store + cost report. Composes with `agtrace` so cost attaches to the active agent span. | **0.0.3** |
 
 → See [`docs/wave-3-overview.md`](docs/wave-3-overview.md) for the trio explainer.
 

@@ -3,7 +3,11 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "repox"
+# Distribution name on PyPI is namespaced under devtrust- to (a) avoid
+# collisions with common short names and (b) brand the whole platform
+# cohesively. The Python module name stays `repox` (unchanged) so
+# `import repox` and the `repox` CLI command continue to work as-is.
+name = "devtrust-repox"
 version = "0.4.0"
 description = "Codebase architecture model that AI tools and other DevTrust products consume."
 readme = "README.md"
