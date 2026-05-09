@@ -3,15 +3,17 @@ name: Release
 # Triggered by git tags shaped like `<package>-v<version>`, e.g.
 #   repox-v0.4.0
 #   sts-v0.0.3
-#   apr-v0.1.1
+#   apr-v0.2.0
 #
-# The job:
-#   1. Reads the package name from the tag prefix.
-#   2. Verifies the package's pyproject + __init__ + CHANGELOG agree on the
-#      version (uses scripts/release.py).
-#   3. Runs ruff + mypy + pytest as a final gate.
-#   4. Builds wheels with `uv build`.
-#   5. Uploads to PyPI via Trusted Publishing (no API token; uses OIDC).
+# Pipeline:
+#   1. parse:   reads the package name from the tag prefix (job output).
+#   2. release: depends on parse; uses needs.parse.outputs.package to pick
+#               the right `pypi-<pkg>` GitHub Environment, runs preflight,
+#               builds, and publishes via PyPI Trusted Publishing.
+#
+# Why two jobs: GitHub evaluates `environment.name` at job-start time,
+# BEFORE steps run, so we can't reference `steps.parse.outputs.*` from a
+# job-level field. `needs.<other-job>.outputs.*` IS available at job-start.
 #
 # Setup required (one-time, per package):
 #   - Register a Trusted Publisher on PyPI for each project, pointing at
@@ -47,20 +49,53 @@ env:
   PYTHONUNBUFFERED: "1"
 
 jobs:
+  # --------------------------------------------------------------------------
+  # parse: turn the git tag (or workflow_dispatch input) into structured
+  # job outputs so downstream jobs can pick the right environment + path.
+  # --------------------------------------------------------------------------
+  parse:
+    name: Parse tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      package: ${{ steps.parse.outputs.package }}
+      version: ${{ steps.parse.outputs.version }}
+    steps:
+      - name: Parse tag
+        id: parse
+        shell: bash
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          if [[ "$TAG" =~ ^(repox|sts|sts-app|apr|apr-app|whychanged|tokencost|agtrace)-v([0-9].*)$ ]]; then
+            PKG="${BASH_REMATCH[1]}"
+            VER="${BASH_REMATCH[2]}"
+          else
+            echo "::error::tag $TAG does not match <package>-v<version>"
+            exit 1
+          fi
+          echo "package=$PKG" >> "$GITHUB_OUTPUT"
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          echo "Parsed tag '$TAG' -> package=$PKG version=$VER"
+
+  # --------------------------------------------------------------------------
+  # release: gates + build + publish. The dynamic environment name is now
+  # derived from `needs.parse.outputs.*`, which IS available at job-start.
+  # --------------------------------------------------------------------------
   release:
-    name: Release ${{ github.ref_name }}
+    name: Release ${{ needs.parse.outputs.package }}@${{ needs.parse.outputs.version }}
+    needs: parse
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     permissions:
       # OIDC trusted-publishing token for PyPI.
       id-token: write
-      # `gh release` reads this to attach changelog notes.
+      # `gh release` reads this if/when we attach changelog notes.
       contents: read
 
     environment:
-      name: pypi-${{ steps.parse.outputs.package }}
-      url: https://pypi.org/project/${{ steps.parse.outputs.package }}/
+      name: pypi-${{ needs.parse.outputs.package }}
+      url: https://pypi.org/project/${{ needs.parse.outputs.package }}/
 
     steps:
       - uses: actions/checkout@v4
@@ -78,48 +113,12 @@ jobs:
       - name: Sync workspace
         run: uv sync --all-packages --all-groups
 
-      - name: Parse tag
-        id: parse
-        shell: bash
-        run: |
-          # Tag format: <package>-v<semver>
-          # Strip the leading 'refs/tags/' if present.
-          TAG="${{ github.event.inputs.tag || github.ref_name }}"
-          if [[ "$TAG" =~ ^(repox|sts|sts-app|apr|apr-app|whychanged|tokencost|agtrace)-v([0-9].*)$ ]]; then
-            PKG="${BASH_REMATCH[1]}"
-            VER="${BASH_REMATCH[2]}"
-          else
-            echo "::error::tag $TAG does not match <package>-v<version>"
-            exit 1
-          fi
-          echo "package=$PKG" >> "$GITHUB_OUTPUT"
-          echo "version=$VER" >> "$GITHUB_OUTPUT"
-
       - name: Pre-flight checks
-        run: uv run python scripts/release.py --check --package ${{ steps.parse.outputs.package }}
-
-      - name: Locate package directory
-        id: pkgdir
-        shell: bash
-        run: |
-          PKG="${{ steps.parse.outputs.package }}"
-          # Map distribution name -> workspace path.
-          case "$PKG" in
-            repox)    DIR="src/products/01-repo-xray/code" ;;
-            sts)      DIR="src/products/02-smart-test-selector/code" ;;
-            sts-app)  DIR="src/products/02-smart-test-selector/app" ;;
-            apr)      DIR="src/products/03-agent-pr-reviewer/code" ;;
-            apr-app)  DIR="src/products/03-agent-pr-reviewer/app" ;;
-            whychanged) DIR="src/products/07-whychanged/code" ;;
-            tokencost) DIR="src/products/08-tokencost/code" ;;
-            agtrace)   DIR="src/products/06-agent-trace-sdk/code" ;;
-            *)        echo "::error::unknown package $PKG"; exit 1 ;;
-          esac
-          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
+        run: uv run python scripts/release.py --check --package ${{ needs.parse.outputs.package }}
 
       - name: Build wheel + sdist
         run: |
-          uv build --package ${{ steps.parse.outputs.package }} --out-dir dist/
+          uv build --package ${{ needs.parse.outputs.package }} --out-dir dist/
 
       - name: Verify build artifacts
         shell: bash

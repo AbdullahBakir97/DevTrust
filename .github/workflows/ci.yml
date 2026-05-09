@@ -53,6 +53,9 @@ jobs:
 
   # --------------------------------------------------------------------------
   # Test matrix: Python 3.11..3.14 across Linux / Windows / macOS.
+  # Runs the SAME commands that `scripts/release.py --check` runs locally:
+  # per-package pytest with `--no-cov`. Keeping coverage out of the matrix
+  # eliminates pytest-cov platform-wheel flakes and ensures CI mirrors local.
   # --------------------------------------------------------------------------
   test:
     name: Test py${{ matrix.python-version }} on ${{ matrix.os }}
@@ -79,13 +82,44 @@ jobs:
       - name: Sync workspace
         run: uv sync --all-packages --all-groups --python ${{ matrix.python-version }}
 
+      - name: Run preflight (per-package pytest, ruff, mypy)
+        # release.py is the single source of truth for what "READY TO RELEASE"
+        # means. Running it here guarantees CI matches what passes locally.
+        run: uv run python scripts/release.py --check
+
+  # --------------------------------------------------------------------------
+  # Coverage: runs once on Linux + Python 3.14. Separate from the matrix so
+  # pytest-cov surface area can't break the cross-platform test grid.
+  # --------------------------------------------------------------------------
+  coverage:
+    name: Coverage
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install Python 3.14
+        run: uv python install 3.14
+
+      - name: Sync workspace
+        run: uv sync --all-packages --all-groups
+
       - name: Run tests with coverage
-        run: uv run pytest --cov=src/products --cov-report=xml --cov-report=term-missing
+        run: |
+          uv run pytest \
+            --cov=src/products \
+            --cov-report=xml \
+            --cov-report=term-missing
 
       - name: Upload coverage report
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-${{ matrix.os }}-py${{ matrix.python-version }}
+          name: coverage-ubuntu-py3.14
           path: coverage.xml
           if-no-files-found: warn

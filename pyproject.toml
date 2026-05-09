@@ -137,13 +137,19 @@ module = "tests.*"
 disallow_untyped_defs = false
 
 # === Pytest ==============================================================
+# IMPORTANT: do NOT put `--cov-report=...` (or any other pytest-cov option)
+# in addopts. That makes `pytest` exit 4 ("usage error") whenever it's run
+# without `--cov=...` on the CLI, which both `release.py --check` (uses
+# --no-cov) and ad-hoc `pytest path/to/test.py` invocations do. Coverage
+# is a CI/orchestration concern; the test runner config should not assume
+# coverage is always on. See .github/workflows/ci.yml for where coverage
+# is actually invoked.
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = [
     "-ra",
     "--strict-config",
     "--strict-markers",
-    "--cov-report=term-missing",
 ]
 testpaths = [
     "src/products/*/code/tests",
