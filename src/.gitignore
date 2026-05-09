@@ -1,0 +1,45 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+*.iml
+
+# Local environment
+.env
+.env.local
+.env.*.local
+*.local
+
+# Build / dependency output
+node_modules/
+dist/
+build/
+target/
+__pycache__/
+*.pyc
+.pytest_cache/
+coverage/
+.cache/
+
+# Logs
+*.log
+logs/
+
+# Secrets — NEVER commit these
+*.pem
+*.key
+secrets/
+*.secrets.json
+
+# Docx working artifacts (keep .docx itself, drop temp files)
+~$*.docx
+~$*.xlsx
+~$*.pptx
+
+# Claude session-specific (keep configs, drop runtime)
+.claude/sessions/
+.claude/cache/
+.claude/.tmp/

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "project": {
+    "name": "DevTrust",
+    "description": "The trust stack for AI-era engineering — connected platform of 8 developer tools across SHIP (pre-merge) and RUN (production) lines."
+  },
+  "context": {
+    "primaryDocs": [
+      "README.md",
+      "docs/DevTrust-Master-Plan.md",
+      "memory/MEMORY.md"
+    ],
+    "ignore": [
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      ".cache/**",
+      "*.lock",
+      "package-lock.json"
+    ]
+  },
+  "behavior": {
+    "preferConcise": true,
+    "askBeforeLargeChanges": true,
+    "assumeRoleOnStart": "engineering-partner"
+  },
+  "permissions": {
+    "allow": ["Read", "Write", "Edit", "Glob", "Grep"],
+    "askBeforeRunning": [
+      "Bash(rm *)",
+      "Bash(git push *)",
+      "Bash(npm publish *)"
+    ]
+  }
+}

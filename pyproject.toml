@@ -1,0 +1,170 @@
+# DevTrust monorepo — umbrella pyproject.toml
+# This file declares the monorepo as a uv workspace and ships the shared
+# developer toolchain (ruff, mypy, pytest). Each Python product lives in
+# src/products/NN-name/code/ with its own pyproject.toml.
+
+[project]
+name = "devtrust-workspace"
+version = "0.0.0"
+description = "DevTrust monorepo — planning workspace and Python products."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary planning workspace; per-product licenses apply" }
+authors = [{ name = "Abdullah Bakir" }]
+
+# This is a workspace root, not a publishable package. No dependencies here —
+# they live in each member's pyproject.toml.
+dependencies = []
+
+[dependency-groups]
+# Shared developer tooling for the whole monorepo. Install with:
+#   uv sync --all-groups          (uv users)
+#   pip install -e .[dev]         (pip users — see [project.optional-dependencies] below)
+dev = [
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "pytest>=8.3.0",
+    "pytest-cov>=5.0.0",
+    "pytest-asyncio>=0.24.0",
+    "pre-commit>=4.0.0",
+    "twine>=5.1.0",   # `twine check` in release.yml
+]
+
+[project.optional-dependencies]
+# Same as the dev group above, exposed for plain pip users.
+dev = [
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "pytest>=8.3.0",
+    "pytest-cov>=5.0.0",
+    "pytest-asyncio>=0.24.0",
+    "pre-commit>=4.0.0",
+    "twine>=5.1.0",
+]
+
+# === uv workspace configuration ==========================================
+# uv automatically discovers any pyproject.toml under `members` patterns and
+# treats them as part of this workspace.
+#
+# IMPORTANT: by default `uv sync` installs only the root project and its dev
+# tooling. To install all workspace members (so per-product CLIs land on PATH)
+# you must pass `--all-packages` explicitly:
+#
+#     uv sync --all-packages --all-groups
+#
+# (uv 0.11 does not yet support `default-members`. Revisit when uv adds it.)
+
+[tool.uv.workspace]
+members = ["src/products/*/code", "src/products/*/app"]
+
+# === Ruff (linter + formatter) ===========================================
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src"]
+extend-exclude = [
+    ".venv",
+    "Include",
+    "Lib",
+    "Scripts",
+    "**/dist",
+    "**/build",
+    "**/.repox",
+]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",   # pycodestyle / pyflakes
+    "I",             # isort
+    "B",             # bugbear
+    "UP",            # pyupgrade
+    "N",             # pep8-naming
+    "RUF",           # ruff-specific
+    "SIM",           # simplify
+    "C4",            # comprehensions
+    "PIE",           # misc
+    "T20",           # flake8-print (catches stray prints)
+]
+ignore = [
+    "E501",          # line length is enforced by formatter, not linter
+    "B008",          # function calls in argument defaults — common in typer
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["T20"]   # prints are fine in tests
+"scripts/**" = ["T20"] # operator-facing release scripts use print()
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# === mypy (type checker) =================================================
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+pretty = true
+show_error_codes = true
+# Check both `code/` (libraries / CLIs) and `app/` (deployable services).
+files = [
+    "src/products/*/code/src",
+    "src/products/*/app/src",
+]
+# Help mypy locate workspace dependencies (sts depends on repox; sts-app
+# depends on sts) without needing them installed in the resolver env.
+mypy_path = [
+    "src/products/01-repo-xray/code/src",
+    "src/products/02-smart-test-selector/code/src",
+]
+exclude = ["build/", "dist/", "\\.venv/", "Lib/", "Include/", "Scripts/"]
+
+[[tool.mypy.overrides]]
+# tree-sitter and tree-sitter-language-pack don't ship type stubs.
+# The repox.callgraph_ts module already wraps them in try/except for
+# runtime; this tells mypy to stop complaining at import time.
+module = [
+    "tree_sitter",
+    "tree_sitter.*",
+    "tree_sitter_language_pack",
+    "tree_sitter_language_pack.*",
+    "anthropic",
+    "anthropic.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+# === Pytest ==============================================================
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = [
+    "-ra",
+    "--strict-config",
+    "--strict-markers",
+    "--cov-report=term-missing",
+]
+testpaths = [
+    "src/products/*/code/tests",
+    "src/products/*/app/tests",
+]
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow (run with -m slow)",
+    "integration: marks tests requiring external services",
+]
+
+# === Coverage ============================================================
+[tool.coverage.run]
+branch = true
+source = ["src/products"]  # both code/ and app/ subtrees
+omit = ["**/tests/**", "**/__main__.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]

@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+# Cancel in-flight runs on the same branch when a new commit lands.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Force colored output even when tools detect a non-TTY (CI logs benefit).
+  FORCE_COLOR: "1"
+  PYTHONUNBUFFERED: "1"
+  # uv's resolver is faster and respects pyproject.toml correctly.
+  UV_PYTHON_PREFERENCE: only-managed
+
+jobs:
+
+  # --------------------------------------------------------------------------
+  # Lint, format, and type-check. Runs once on the fastest matrix.
+  # --------------------------------------------------------------------------
+  lint:
+    name: Lint + format + typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install Python 3.14
+        run: uv python install 3.14
+
+      - name: Sync workspace
+        run: uv sync --all-packages --all-groups
+
+      - name: Ruff (lint)
+        run: uv run ruff check .
+
+      - name: Ruff (format check)
+        run: uv run ruff format --check .
+
+      - name: Mypy (strict)
+        run: uv run mypy
+
+  # --------------------------------------------------------------------------
+  # Test matrix: Python 3.11..3.14 across Linux / Windows / macOS.
+  # --------------------------------------------------------------------------
+  test:
+    name: Test py${{ matrix.python-version }} on ${{ matrix.os }}
+    needs: lint
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Sync workspace
+        run: uv sync --all-packages --all-groups --python ${{ matrix.python-version }}
+
+      - name: Run tests with coverage
+        run: uv run pytest --cov=src/products --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage report
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: coverage.xml
+          if-no-files-found: warn

@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sts"
+version = "0.0.3"
+description = "Smart Test Selector — given a code change, decide which tests must run."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [{ name = "Abdullah Bakir" }]
+keywords = ["ci", "developer-tools", "github-app", "test-selection", "tests"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Testing",
+]
+
+dependencies = [
+    "typer>=0.15.0",
+    "rich>=13.9.0",
+    "pydantic>=2.10.0",
+    "pathspec>=1.0.0",
+    # Workspace dep: sts consumes Repo X-ray's architecture model.
+    "repox",
+]
+
+[project.scripts]
+sts = "sts.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/AbdullahBakir97/DevTrust"
+Repository = "https://github.com/AbdullahBakir97/DevTrust"
+Documentation = "https://github.com/AbdullahBakir97/DevTrust/tree/main/src/products/02-smart-test-selector/code#readme"
+Changelog = "https://github.com/AbdullahBakir97/DevTrust/blob/main/src/products/02-smart-test-selector/code/CHANGELOG.md"
+Issues = "https://github.com/AbdullahBakir97/DevTrust/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sts"]
+
+[tool.uv.sources]
+repox = { workspace = true }

@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevTrust — Platform Dashboard</title>
+<style>
+  :root {
+    --primary: #1F2A37;
+    --accent: #C96442;
+    --accent-deep: #8B3F22;
+    --accent-soft: #F5E9E2;
+    --subtle: #6B7280;
+    --divider: #E5E7EB;
+    --bg: #FAFAF9;
+    --bg-card: #FFFFFF;
+    --bg-alt: #F7F4F1;
+    --ship-bg: #FDF6F1;
+    --ship-accent: #C96442;
+    --run-bg: #EEF2F6;
+    --run-accent: #1F4F7A;
+    --good: #2F855A;
+    --warn: #B7791F;
+    --bad: #B23A48;
+    --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--primary);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 32px 24px 64px; }
+
+  /* HEADER */
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--divider); margin-bottom: 32px; }
+  .brand-eyebrow { font-size: 11px; letter-spacing: 2px; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; }
+  .brand-title { font-size: 38px; font-weight: 700; margin: 0; line-height: 1; }
+  .brand-tag { font-size: 14px; color: var(--subtle); font-style: italic; margin-top: 8px; }
+  .meta { font-size: 12px; color: var(--subtle); text-align: right; }
+
+  /* KPI cards */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .kpi { background: var(--bg-card); padding: 18px; border-radius: 10px; border: 1px solid var(--divider); box-shadow: var(--shadow); }
+  .kpi-label { font-size: 11px; letter-spacing: 1px; color: var(--subtle); text-transform: uppercase; margin-bottom: 6px; }
+  .kpi-val { font-size: 24px; font-weight: 700; }
+  .kpi-sub { font-size: 12px; color: var(--subtle); margin-top: 2px; }
+
+  /* Wave timeline */
+  .timeline { background: var(--bg-card); border: 1px solid var(--divider); border-radius: 12px; padding: 20px; margin-bottom: 32px; box-shadow: var(--shadow); }
+  .timeline-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--accent); text-transform: uppercase; margin: 0 0 16px; }
+  .waves { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .wave-card { background: var(--bg-alt); border: 1px solid var(--divider); border-radius: 8px; padding: 14px; }
+  .wave-num { font-size: 11px; color: var(--subtle); font-weight: 700; letter-spacing: 1px; }
+  .wave-name { font-weight: 700; margin: 4px 0; font-size: 14px; }
+  .wave-months { font-size: 11px; color: var(--subtle); margin-bottom: 10px; }
+  .wave-products { font-size: 12px; line-height: 1.6; }
+  .wave-products li { margin-bottom: 2px; }
+  .wave-products ul { list-style: none; padding: 0; margin: 0; }
+
+  /* Section heading */
+  .sec-head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 16px; }
+  .sec-title { font-size: 18px; font-weight: 700; margin: 0; }
+  .sec-sub { font-size: 12px; color: var(--subtle); }
+
+  /* Controls */
+  .controls { background: var(--bg-card); border: 1px solid var(--divider); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+  .control-group { display: flex; align-items: center; gap: 8px; }
+  .control-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--subtle); text-transform: uppercase; }
+  .pill {
+    padding: 4px 12px; border-radius: 999px; border: 1px solid var(--divider); background: white;
+    font-size: 12px; cursor: pointer; transition: all 0.15s; color: var(--primary);
+  }
+  .pill.active { background: var(--primary); color: white; border-color: var(--primary); }
+  .pill:hover:not(.active) { background: var(--bg-alt); }
+
+  /* Product grid */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card {
+    background: var(--bg-card); border-radius: 12px; border: 1px solid var(--divider);
+    padding: 16px; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .card.line-ship { border-left: 4px solid var(--ship-accent); }
+  .card.line-run { border-left: 4px solid var(--run-accent); }
+
+  .card-num { position: absolute; top: 14px; right: 14px; font-size: 11px; color: var(--subtle); font-weight: 700; letter-spacing: 1px; }
+  .card-tags { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .tag { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; }
+  .tag.line-ship { background: var(--ship-bg); color: var(--ship-accent); }
+  .tag.line-run { background: var(--run-bg); color: var(--run-accent); }
+  .tag.lane-paid { background: var(--accent); color: white; }
+  .tag.lane-oss { background: var(--bg-alt); color: var(--primary); border: 1px solid var(--divider); }
+  .tag.foundation { background: var(--primary); color: white; }
+  .tag.lead-bet { background: #FFEDD5; color: var(--accent-deep); border: 1px solid var(--accent); }
+
+  .card-title { font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+  .card-tagline { font-size: 12.5px; color: var(--subtle); line-height: 1.4; min-height: 36px; }
+
+  .card-meta { display: flex; gap: 14px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--divider); font-size: 11px; }
+  .meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .meta-label { color: var(--subtle); letter-spacing: 0.5px; text-transform: uppercase; font-size: 9px; font-weight: 700; }
+  .meta-val { font-weight: 600; color: var(--primary); }
+
+  .score-bar { display: flex; gap: 4px; margin-top: 12px; }
+  .score-segment { flex: 1; height: 6px; border-radius: 3px; background: var(--divider); position: relative; overflow: hidden; }
+  .score-segment .fill { position: absolute; top: 0; left: 0; height: 100%; background: var(--accent); border-radius: 3px; }
+  .score-segment.r .fill { background: var(--accent); }
+  .score-segment.e .fill { background: #4A90A4; }
+  .score-segment.l .fill { background: var(--good); }
+  .score-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 11px; }
+  .score-total { font-weight: 700; color: var(--accent); }
+
+  .status-row { margin-top: 10px; display: flex; gap: 4px; }
+  .status-btn { flex: 1; font-size: 10px; padding: 4px 0; border: 1px solid var(--divider); background: white; cursor: pointer; border-radius: 4px; transition: all 0.15s; color: var(--subtle); font-weight: 600; }
+  .status-btn:hover { background: var(--bg-alt); }
+  .status-btn.active.planning { background: #DBEAFE; border-color: #1E40AF; color: #1E40AF; }
+  .status-btn.active.building { background: #FEF3C7; border-color: #92400E; color: #92400E; }
+  .status-btn.active.shipped { background: #D1FAE5; border-color: var(--good); color: var(--good); }
+  .status-btn.active.killed { background: #FEE2E2; border-color: var(--bad); color: var(--bad); }
+
+  /* Dependencies */
+  .deps-section { background: var(--bg-card); border: 1px solid var(--divider); border-radius: 12px; padding: 20px; margin: 32px 0; box-shadow: var(--shadow); }
+  .deps-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--accent); text-transform: uppercase; margin: 0 0 16px; }
+  .deps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .deps-list { padding: 0; margin: 0; list-style: none; font-size: 13px; }
+  .deps-list li { padding: 6px 0; border-bottom: 1px solid var(--divider); display: flex; gap: 8px; align-items: center; }
+  .deps-list li:last-child { border-bottom: none; }
+  .deps-arrow { color: var(--subtle); font-weight: 700; }
+
+  /* Modal */
+  .modal-bg { position: fixed; inset: 0; background: rgba(31,42,55,0.6); display: none; align-items: flex-start; justify-content: center; padding: 40px 20px; z-index: 100; overflow-y: auto; }
+  .modal-bg.open { display: flex; }
+  .modal { background: var(--bg-card); border-radius: 12px; max-width: 760px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+  .modal-head { background: var(--primary); color: white; padding: 24px; }
+  .modal-head .num { font-size: 11px; color: #D1D5DB; font-weight: 700; letter-spacing: 1px; }
+  .modal-head h2 { margin: 4px 0 6px; font-size: 26px; }
+  .modal-head .sub { color: #D1D5DB; font-size: 13px; font-style: italic; }
+  .modal-body { padding: 24px; }
+  .modal-section { margin-bottom: 20px; }
+  .modal-section h4 { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--accent); text-transform: uppercase; margin: 0 0 8px; }
+  .modal-section p, .modal-section li { font-size: 14px; line-height: 1.6; }
+  .modal-section ul { margin: 0; padding-left: 20px; }
+  .modal-close { float: right; background: rgba(255,255,255,0.1); border: 0; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+
+  /* Footer */
+  footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--divider); font-size: 12px; color: var(--subtle); display: flex; justify-content: space-between; }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .kpis, .grid, .waves, .deps-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .kpis, .grid, .waves, .deps-grid { grid-template-columns: 1fr; }
+    header { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="brand-eyebrow">PLATFORM DASHBOARD</div>
+      <h1 class="brand-title">DevTrust</h1>
+      <div class="brand-tag">From PR to production — the trust stack for AI-era engineering.</div>
+    </div>
+    <div class="meta">
+      v1.0 · May 2026<br>
+      Pre-Wave 1 · Planning<br>
+      Owner: Abdullah Bakir
+    </div>
+  </header>
+
+  <!-- KPIs -->
+  <div class="kpis">
+    <div class="kpi">
+      <div class="kpi-label">Products planned</div>
+      <div class="kpi-val">9</div>
+      <div class="kpi-sub">5 SHIP · 4 RUN</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Lanes</div>
+      <div class="kpi-val">5 OSS · 4 paid</div>
+      <div class="kpi-sub">Both lanes essential</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Build timeline</div>
+      <div class="kpi-val">12 months</div>
+      <div class="kpi-sub">4 waves · ~3 months each</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Year 1 MRR target</div>
+      <div class="kpi-val">$80K+</div>
+      <div class="kpi-sub">Combined platform</div>
+    </div>
+  </div>
+
+  <!-- Waves -->
+  <div class="timeline">
+    <h3 class="timeline-title">— 4-wave sequencing —</h3>
+    <div class="waves">
+      <div class="wave-card">
+        <div class="wave-num">WAVE 1</div>
+        <div class="wave-name">Foundation + lead bet</div>
+        <div class="wave-months">Months 0–3</div>
+        <ul class="wave-products">
+          <li>· Repo X-ray <span style="color:var(--subtle)">(OSS)</span></li>
+          <li>· Smart Test Selector <span style="color:var(--accent)">(paid)</span></li>
+        </ul>
+      </div>
+      <div class="wave-card">
+        <div class="wave-num">WAVE 2</div>
+        <div class="wave-name">Expand SHIP</div>
+        <div class="wave-months">Months 3–6</div>
+        <ul class="wave-products">
+          <li>· Agent-PR Reviewer <span style="color:var(--accent)">(paid)</span></li>
+          <li>· CI Local <span style="color:var(--subtle)">(OSS)</span></li>
+        </ul>
+      </div>
+      <div class="wave-card">
+        <div class="wave-num">WAVE 3</div>
+        <div class="wave-name">Open RUN line</div>
+        <div class="wave-months">Months 6–9</div>
+        <ul class="wave-products">
+          <li>· Agent Trace SDK <span style="color:var(--subtle)">(OSS)</span></li>
+          <li>· WhyChanged <span style="color:var(--subtle)">(OSS)</span></li>
+          <li>· TokenCost <span style="color:var(--accent)">(paid)</span></li>
+        </ul>
+      </div>
+      <div class="wave-card">
+        <div class="wave-num">WAVE 4</div>
+        <div class="wave-name">Compliance moat</div>
+        <div class="wave-months">Months 9–12</div>
+        <ul class="wave-products">
+          <li>· AgentGuard <span style="color:var(--accent)">(paid)</span></li>
+          <li>· Dep Upgrade Pilot <span style="color:var(--accent)">(paid)</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="sec-head">
+    <h2 class="sec-title">Products</h2>
+    <span class="sec-sub">Click any card for full spec. Status persists in your browser.</span>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <span class="control-label">LINE</span>
+      <button class="pill active" data-filter="line" data-val="all">All</button>
+      <button class="pill" data-filter="line" data-val="SHIP">SHIP</button>
+      <button class="pill" data-filter="line" data-val="RUN">RUN</button>
+    </div>
+    <div class="control-group">
+      <span class="control-label">LANE</span>
+      <button class="pill active" data-filter="lane" data-val="all">All</button>
+      <button class="pill" data-filter="lane" data-val="OSS">OSS</button>
+      <button class="pill" data-filter="lane" data-val="Paid">Paid</button>
+    </div>
+    <div class="control-group">
+      <span class="control-label">WAVE</span>
+      <button class="pill active" data-filter="wave" data-val="all">All</button>
+      <button class="pill" data-filter="wave" data-val="1">1</button>
+      <button class="pill" data-filter="wave" data-val="2">2</button>
+      <button class="pill" data-filter="wave" data-val="3">3</button>
+      <button class="pill" data-filter="wave" data-val="4">4</button>
+    </div>
+    <div class="control-group" style="margin-left: auto;">
+      <span class="control-label">SORT</span>
+      <button class="pill active" data-sort="wave">Wave</button>
+      <button class="pill" data-sort="score">Score</button>
+      <button class="pill" data-sort="num">Number</button>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <!-- Dependencies map -->
+  <div class="deps-section">
+    <h3 class="deps-title">— Dependencies between products —</h3>
+    <div class="deps-grid">
+      <div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px;">SHIP cluster — powered by Repo X-ray</div>
+        <ul class="deps-list">
+          <li><strong>Smart Test Selector</strong> <span class="deps-arrow">→</span> uses Repo X-ray's call graph</li>
+          <li><strong>Agent-PR Reviewer</strong> <span class="deps-arrow">→</span> uses Repo X-ray's conventions + dependency graph</li>
+          <li><strong>Dep Upgrade Pilot</strong> <span class="deps-arrow">→</span> uses Repo X-ray for call-site analysis</li>
+          <li><strong>CI Local</strong> <span class="deps-arrow">→</span> standalone (no dependency)</li>
+        </ul>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px;">RUN cluster — powered by Agent Trace SDK</div>
+        <ul class="deps-list">
+          <li><strong>WhyChanged</strong> <span class="deps-arrow">→</span> optionally consumes Agent Trace SDK spans</li>
+          <li><strong>TokenCost</strong> <span class="deps-arrow">→</span> aggregates Agent Trace SDK spans by tag</li>
+          <li><strong>AgentGuard</strong> <span class="deps-arrow">→</span> evaluates policies against Agent Trace SDK spans</li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top:14px;font-size:12px;color:var(--subtle);font-style:italic;">All 9 products share the platform infrastructure: auth & teams, billing & usage, agent runtime, unified dashboard.</div>
+  </div>
+
+  <footer>
+    <div>
+      <a href="DevTrust-Master-Plan.docx">Open master plan (.docx)</a>
+      &nbsp;·&nbsp;
+      <a href="../README.md">README</a>
+      &nbsp;·&nbsp;
+      <a href="../TASKS.md">Tasks</a>
+    </div>
+    <div>Built locally · localStorage status persists across sessions</div>
+  </footer>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+const PRODUCTS = [
+  {
+    num: "01", name: "Repo X-ray", line: "SHIP", lane: "OSS", foundation: true, leadBet: false, wave: 1,
+    tagline: "Codebase architecture model that AI tools and other DevTrust products consume.",
+    buyer: "Devs / AI tools", pricing: "Free OSS · $9/dev/mo hosted",
+    score: { revenue: 3, ease: 4, longterm: 5 },
+    pain: "Every AI coding tool re-derives shallow context on every session. No shared, persistent representation of how the project actually works.",
+    valueProp: "One artifact. Every AI tool understands your repo the same way.",
+    features: ["repox build CLI emits .repox/architecture.json", "Static call graph, entry-point detection, dependency graph", "Convention extraction (naming, error handling, structure)", "MCP server — directly consumable by Claude/Cursor", "GitHub Action regenerates on PR"],
+    risks: "Big AI tools ship native repo understanding · MCP adoption stalls · Output noisy on edge-case repos",
+    why: "If Repo X-ray exists, then Smart Test Selector, Agent-PR Reviewer, and Dep Upgrade Pilot get their codebase analysis layer for free. Three products' worth of work, written once."
+  },
+  {
+    num: "02", name: "Smart Test Selector", line: "SHIP", lane: "Paid", foundation: false, leadBet: true, wave: 1,
+    tagline: "Decides which tests must run on each PR. Cuts CI from 28→9 min.",
+    buyer: "Engineering managers", pricing: "$10/dev/mo · Free for OSS",
+    score: { revenue: 5, ease: 4, longterm: 4 },
+    pain: "CI pipelines run every test on every PR because nobody trusts impact analysis. 30+ minute builds, devs context-switching, $5–10K/mo CI bills for mid-size teams.",
+    valueProp: "Stop running 100% of tests on 100% of PRs. We pick the 20% that matter.",
+    features: ["Diff-aware test selection via Repo X-ray", "must / should / safe-to-skip buckets", "Flakiness predictor for new tests", "PR check integration with full audit trail", "Weekly CI savings digest"],
+    risks: "GitHub ships native via Copilot Workspace · Trust erosion if too aggressive · LLM cost per PR",
+    why: "Of all 9 products, this one is most likely to generate revenue inside 90 days. ROI math: 30 devs × $10/mo = $300/mo cost vs. $2.5–5K/mo CI savings. Payback in week 1."
+  },
+  {
+    num: "03", name: "Agent-PR Reviewer", line: "SHIP", lane: "Paid", foundation: false, leadBet: false, wave: 2,
+    tagline: "Code review bot tuned for the failure modes of AI-generated PRs.",
+    buyer: "Eng leads · OSS maintainers", pricing: "$19/dev/mo · $99/repo OSS tier",
+    score: { revenue: 4, ease: 3, longterm: 4 },
+    pain: "Generic review bots treat all PRs the same. AI PRs fail in distinct ways: hallucinated APIs, duplicated logic, convention drift, unsafe context handling.",
+    valueProp: "Code review built for the era when most PRs are written with AI.",
+    features: ["AI-failure-mode detectors (hallucinated imports, duplicate logic, convention drift)", "Repo X-ray-aware convention checks", "Provenance hint (AI-generated vs. human)", "Severity-aware comments (block vs. suggest)", "Maintainer dashboard for OSS triage"],
+    risks: "CodeRabbit/Greptile out-feature us · LLM cost balloons · False positives erode trust",
+    why: "Wave 2 reuses Repo X-ray (no new foundation work) and adds a second paid product. Compete on AI-failure specificity — generic review bots treat all PRs the same."
+  },
+  {
+    num: "04", name: "CI Local", line: "SHIP", lane: "OSS", foundation: false, leadBet: false, wave: 2,
+    tagline: "Run your CI on your laptop in the exact runner environment, before you push.",
+    buyer: "Individual developers", pricing: "Free OSS · $19/dev Pro",
+    score: { revenue: 2, ease: 3, longterm: 4 },
+    pain: "From HN: 'A sane CI system. I would love to have access to the same env as the CI so I could prototype the script on my own machine before committing. Solve this and I would pay for it.'",
+    valueProp: "The exact same image. The exact same env. Run it before you push.",
+    features: ["cilocal run reads any major CI config", "Image-accurate runners (Ubuntu/macOS/Windows)", "Breakpoint support — pause between steps", "Secret injection from .env / 1Password / Vault", "Diff against last hosted run"],
+    risks: "act adds breakpoints and CI Local is redundant · Image mirroring legally risky for proprietary runners · Container runtime fragmentation",
+    why: "Wave 2 needs one OSS distribution win to drive top-of-funnel. CI Local is the HN-front-page magnet — pure pain, immediate demo, instant viral moment."
+  },
+  {
+    num: "05", name: "Dep Upgrade Pilot", line: "SHIP", lane: "Paid", foundation: false, leadBet: false, wave: 4,
+    tagline: "AI agent that proposes safe dependency upgrade paths and drafts the PRs.",
+    buyer: "Platform / security teams", pricing: "$79/repo/mo · Enterprise $40K+/yr",
+    score: { revenue: 4, ease: 2, longterm: 5 },
+    pain: "Renovate/Dependabot are mechanical. Hundreds of bump-PRs sit open. EU CRA enforcement begins late 2026. 55% of compliance-failing orgs have EOL OSS deps.",
+    valueProp: "Your dependencies, upgraded safely, in priority order driven by risk.",
+    features: ["Risk-prioritized upgrade plan (CVE + EOL + breaking-change probability)", "Safe-path PR drafts using Repo X-ray for call-site analysis", "Test-driven verification before opening PR", "Three tiers: safe / assisted / risky", "CRA-ready audit log"],
+    risks: "Renovate/Dependabot ship native risk-prioritization · LLM cost vs. pricing · CRA enforcement delayed · Trust takes time",
+    why: "Compliance products sell to enterprises after credibility is established. By Wave 4, we have 4 OSS products + 4 paid products live — the credibility platform a CRA-tailored sales motion can stand on."
+  },
+  {
+    num: "06", name: "Agent Trace SDK", line: "RUN", lane: "OSS", foundation: true, leadBet: false, wave: 3,
+    tagline: "Open standard for AI agent telemetry — OpenTelemetry for agents.",
+    buyer: "Devs / observability vendors", pricing: "Free OSS · $0.50/M tokens hosted",
+    score: { revenue: 3, ease: 3, longterm: 5 },
+    pain: "Every agent observability vendor has its own format. OpenTelemetry GenAI conventions are immature. Switching frameworks (LangChain → CrewAI) breaks trace fidelity.",
+    valueProp: "One trace format. Every agent framework. Every observability vendor.",
+    features: ["TS + Python SDKs with traced() wrapper", "OTel-compatible structured spans (prompt, tool, retry, fallback)", "Self-hostable agent-trace ui viewer", "Framework adapters: LangChain, CrewAI, Vercel AI SDK, MS Agent Framework", "PII redaction defaults on"],
+    risks: "OTel GenAI conventions absorb our extensions · Big vendors ignore us · Adapter drift behind framework changes · Pricing race-to-zero",
+    why: "If Agent Trace SDK exists, then WhyChanged, TokenCost, and AgentGuard get telemetry plumbing for free. Three RUN products' worth of work, written once."
+  },
+  {
+    num: "07", name: "WhyChanged", line: "RUN", lane: "OSS", foundation: false, leadBet: false, wave: 3,
+    tagline: "At incident time: 'what changed in your service window?' with ranked culprits.",
+    buyer: "SREs · on-call developers", pricing: "Free OSS · $79/team/mo hosted",
+    score: { revenue: 2, ease: 4, longterm: 3 },
+    pain: "'My monitoring tells me there's a problem. It doesn't tell me what changed.' 30+ minutes correlating deploys, flag flips, and config drifts manually during incidents.",
+    valueProp: "Your changelog at incident time. Ranked. With one-click rollbacks.",
+    features: ["Connects to deploy events (Vercel/Render/ArgoCD) + flags (LaunchDarkly/Statsig) + configs", "Service-window correlation with ranking", "One-click rollback links", "Slack/Discord/Teams bot for incident channels", "Markdown post-mortem export"],
+    risks: "Datadog/Honeycomb release similar feature · Self-hosting friction · Integration matrix is a moving target",
+    why: "Wave 3 opens the RUN line. WhyChanged is the OSS hook — 'free thing every SRE will install in an afternoon' — that makes the rest of the RUN line credible."
+  },
+  {
+    num: "08", name: "TokenCost", line: "RUN", lane: "Paid", foundation: false, leadBet: false, wave: 3,
+    tagline: "CFO-grade attribution of LLM spend by feature, team, and customer.",
+    buyer: "CFOs · VP Eng · FP&A", pricing: "Free up to $1K/mo · 1.5% of tracked spend",
+    score: { revenue: 5, ease: 4, longterm: 4 },
+    pain: "CFOs ask 'what did our AI features cost last month, by feature, by team, by customer?' Engineering can't answer cleanly. Bills swing 2–3× quarter over quarter.",
+    valueProp: "AI costs explained to your CFO. By feature. By team. By customer. Forecasted, not just historical.",
+    features: ["One-line install in front of OpenAI/Anthropic/Bedrock", "Feature/team/customer-tagged dashboards", "Budget alerts at 50/80/100%", "PR comments showing prompt-cost diff", "CFO-ready monthly PDF exports", "Customer-cost attribution for B2B SaaS"],
+    risks: "Helicone/Langfuse add CFO reporting · Token prices keep dropping · Customers don't want spend data piped to vendor · Tag discipline is hard",
+    why: "Wave 3 introduces the RUN product line, and TokenCost is the wave's revenue engine. Beats Helicone and Langfuse on three fronts: invariant-checked numbers, finance-system integrations, customer-cost attribution."
+  },
+  {
+    num: "09", name: "AgentGuard", line: "RUN", lane: "Paid", foundation: false, leadBet: false, wave: 4,
+    tagline: "Policy-as-code runtime for AI agents. Audit log + hard-no enforcement.",
+    buyer: "CISOs · platform leads", pricing: "$99/agent/mo · Enterprise $30K+ · SOC 2 bundle $80K+",
+    score: { revenue: 5, ease: 2, longterm: 5 },
+    pain: "OWASP Top 10 for Agentic Apps was published Dec 2025. 96% of enterprises run agents in production; only 12% have a platform to manage them. Audit logs and hard-no enforcement are mostly absent.",
+    valueProp: "Agents you can put in production with the same confidence as the rest of your stack — auditable, scope-limited, governed.",
+    features: ["Policy-as-code DSL for tool/action boundaries", "Runtime enforcement between agent and tools", "Per-agent identity + scoped credentials", "Replay + time-travel debugging for incidents", "OWASP Top-10 detector pack", "Compliance evidence export (SOC 2 / ISO 27001 / EU AI Act)"],
+    risks: "Big platform vendors (MS/Google/AWS) ship native governance · Customers find policies too restrictive · SOC 2 cert is expensive · LLM provider native guardrails overlap",
+    why: "The category boards will mandate within 18 months. By Wave 4, DevTrust's track record (4 OSS launches + 3 paid SaaS + own SOC 2 underway) gives the enterprise sales motion something to stand on."
+  }
+];
+
+const STATUS_KEY = 'devtrust-product-status-v1';
+let statusMap = JSON.parse(localStorage.getItem(STATUS_KEY) || '{}');
+const STATUSES = ['planning', 'building', 'shipped', 'killed'];
+
+let activeFilters = { line: 'all', lane: 'all', wave: 'all' };
+let activeSort = 'wave';
+
+function scoreTotal(p) { return p.score.revenue + p.score.ease + p.score.longterm; }
+
+function render() {
+  const grid = document.getElementById('grid');
+  let list = PRODUCTS.slice();
+
+  if (activeFilters.line !== 'all') list = list.filter(p => p.line === activeFilters.line);
+  if (activeFilters.lane !== 'all') list = list.filter(p => p.lane === activeFilters.lane);
+  if (activeFilters.wave !== 'all') list = list.filter(p => p.wave === parseInt(activeFilters.wave));
+
+  if (activeSort === 'wave') list.sort((a, b) => a.wave - b.wave || parseInt(a.num) - parseInt(b.num));
+  else if (activeSort === 'score') list.sort((a, b) => scoreTotal(b) - scoreTotal(a));
+  else if (activeSort === 'num') list.sort((a, b) => parseInt(a.num) - parseInt(b.num));
+
+  grid.innerHTML = list.map(p => {
+    const total = scoreTotal(p);
+    const status = statusMap[p.num] || null;
+    return `
+      <div class="card line-${p.line.toLowerCase()}" onclick="openModal('${p.num}')">
+        <div class="card-num">#${p.num}</div>
+        <div class="card-tags">
+          <span class="tag line-${p.line.toLowerCase()}">${p.line}</span>
+          <span class="tag lane-${p.lane.toLowerCase()}">${p.lane === 'OSS' ? 'OSS' : 'PAID'}</span>
+          ${p.foundation ? '<span class="tag foundation">FOUNDATION</span>' : ''}
+          ${p.leadBet ? '<span class="tag lead-bet">LEAD BET</span>' : ''}
+          <span style="margin-left:auto;font-size:10px;color:var(--subtle);font-weight:700;">W${p.wave}</span>
+        </div>
+        <h3 class="card-title">${p.name}</h3>
+        <div class="card-tagline">${p.tagline}</div>
+        <div class="card-meta">
+          <div class="meta-item"><span class="meta-label">Buyer</span><span class="meta-val">${p.buyer}</span></div>
+          <div class="meta-item"><span class="meta-label">Pricing</span><span class="meta-val">${p.pricing}</span></div>
+        </div>
+        <div class="score-row">
+          <span style="color:var(--subtle);font-size:10px;letter-spacing:0.5px;">SCORE</span>
+          <span class="score-total">${total} / 15</span>
+        </div>
+        <div class="score-bar">
+          <div class="score-segment r" title="Revenue: ${p.score.revenue}/5"><div class="fill" style="width:${p.score.revenue * 20}%"></div></div>
+          <div class="score-segment e" title="Ease: ${p.score.ease}/5"><div class="fill" style="width:${p.score.ease * 20}%"></div></div>
+          <div class="score-segment l" title="Long-term: ${p.score.longterm}/5"><div class="fill" style="width:${p.score.longterm * 20}%"></div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:var(--subtle);font-weight:600;">
+          <span>R: ${p.score.revenue}</span><span>E: ${p.score.ease}</span><span>LT: ${p.score.longterm}</span>
+        </div>
+        <div class="status-row" onclick="event.stopPropagation()">
+          ${STATUSES.map(s => `<button class="status-btn ${status === s ? 'active ' + s : ''}" onclick="setStatus('${p.num}','${s}')">${s}</button>`).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function setStatus(num, status) {
+  if (statusMap[num] === status) delete statusMap[num];
+  else statusMap[num] = status;
+  localStorage.setItem(STATUS_KEY, JSON.stringify(statusMap));
+  render();
+}
+
+function openModal(num) {
+  const p = PRODUCTS.find(x => x.num === num);
+  if (!p) return;
+  const m = document.getElementById('modal');
+  const total = scoreTotal(p);
+  m.innerHTML = `
+    <div class="modal-head">
+      <button class="modal-close" onclick="closeModal()">close</button>
+      <div class="num">PRODUCT ${p.num} · ${p.line} · WAVE ${p.wave} · ${p.lane.toUpperCase()}${p.foundation ? ' · FOUNDATION' : ''}${p.leadBet ? ' · LEAD BET' : ''}</div>
+      <h2>${p.name}</h2>
+      <div class="sub">${p.tagline}</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section"><h4>Pain point</h4><p>${p.pain}</p></div>
+      <div class="modal-section"><h4>Value proposition</h4><p style="font-style:italic;">"${p.valueProp}"</p></div>
+      <div class="modal-section"><h4>Key features</h4><ul>${p.features.map(f => `<li>${f}</li>`).join('')}</ul></div>
+      <div class="modal-section"><h4>Buyer · pricing</h4><p>${p.buyer} — ${p.pricing}</p></div>
+      <div class="modal-section"><h4>Score</h4>
+        <p>Revenue: ${p.score.revenue}/5  ·  Ease to build: ${p.score.ease}/5  ·  Long-term value: ${p.score.longterm}/5  ·  <strong>Total: ${total}/15</strong></p>
+      </div>
+      <div class="modal-section"><h4>Risks</h4><p>${p.risks}</p></div>
+      <div class="modal-section"><h4>Why this in this wave</h4><p>${p.why}</p></div>
+      <div class="modal-section">
+        <h4>Detailed spec</h4>
+        <p style="font-size:13px;color:var(--subtle);">For the full one-pager, open <code>products/${p.num}-${p.name.toLowerCase().replace(/\s+/g, '-')}/PRODUCT.md</code>. For the full master plan with sequencing, GTM, and resource details, open <code>docs/DevTrust-Master-Plan.docx</code>.</p>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalBg').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalBg').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+document.querySelectorAll('.pill[data-filter]').forEach(btn => {
+  btn.onclick = () => {
+    const k = btn.dataset.filter;
+    document.querySelectorAll(`.pill[data-filter="${k}"]`).forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilters[k] = btn.dataset.val;
+    render();
+  };
+});
+
+document.querySelectorAll('.pill[data-sort]').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.pill[data-sort]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeSort = btn.dataset.sort;
+    render();
+  };
+});
+
+render();
+</script>
+</body>
+</html>

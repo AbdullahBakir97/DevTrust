@@ -1,0 +1,98 @@
+# DevTrust monorepo .gitignore
+# (Replaces the auto-generated venv .gitignore that lived here.)
+
+# === Python virtual environments ===
+.venv/
+venv/
+env/
+ENV/
+
+# Legacy: stray files from a `python -m venv .` (venv in repo root). Note: we
+# do NOT blanket-ignore /Scripts/ because Windows is case-insensitive and that
+# would also hide our real scripts/ directory (which contains release.py).
+# Just ignore the file that proves a stray venv landed at the root.
+/pyvenv.cfg
+
+# === Python build artifacts ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+pip-wheel-metadata/
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+
+# === IDE / editor noise ===
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# === OS / shell ===
+*.log
+logs/
+
+# === Secrets — NEVER commit ===
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets/
+*.secrets.json
+
+# === DevTrust product output dirs ===
+# When running our own tools on this repo, each product writes to a dotfile-
+# prefixed dir at the root. These are ephemeral reports, never source of
+# truth, never committed. (gitignore does NOT support inline `# comments`
+# after a pattern, so each path lives on its own line below.)
+.repox/
+.sts/
+.apr/
+.whychanged/
+.tokencost/
+.agtrace/
+
+# === AI working memory ===
+# Personal memory files used by Claude during development. Public release
+# would expose work-style preferences, so keep them local. Re-enable per
+# file if you decide a particular memory should be public docs.
+src/memory/
+
+# === Office working artifacts ===
+~$*.docx
+~$*.xlsx
+~$*.pptx
+
+# === Claude / Cowork session state ===
+.claude/sessions/
+.claude/cache/
+.claude/.tmp/
+
+# === Node (in case any product needs JS tooling) ===
+node_modules/
+*.tgz
+.npm/
+.pnpm-store/
+
+# === Local-only configs ===
+.local/
+*.local

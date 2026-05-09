@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "apr"
+version = "0.2.0"
+description = "Agent-PR Reviewer — deterministic + AI-pattern review for pull requests."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [{ name = "Abdullah Bakir" }]
+keywords = ["ci", "code-review", "developer-tools", "github-app", "pr-review"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Quality Assurance",
+]
+
+dependencies = [
+    "typer>=0.15.0",
+    "rich>=13.9.0",
+    "pydantic>=2.10.0",
+    # apr consumes Repo X-ray's architecture model for file context.
+    "repox",
+    # JS / TS rule pack via tree-sitter (mirrors repox's pin).
+    "tree-sitter>=0.23.0",
+    "tree-sitter-language-pack>=0.4.0,<1.0",
+]
+
+[project.optional-dependencies]
+# Real LLM-backed rules (ai-review:diff-comprehension). The
+# deterministic ai-review:hallucinated-symbol rule does NOT need
+# this extra - it works from the repox artifact alone.
+ai = [
+    "anthropic>=0.40.0",
+]
+
+[project.scripts]
+apr = "apr.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/AbdullahBakir97/DevTrust"
+Repository = "https://github.com/AbdullahBakir97/DevTrust"
+Documentation = "https://github.com/AbdullahBakir97/DevTrust/tree/main/src/products/03-agent-pr-reviewer/code#readme"
+Changelog = "https://github.com/AbdullahBakir97/DevTrust/blob/main/src/products/03-agent-pr-reviewer/code/CHANGELOG.md"
+Issues = "https://github.com/AbdullahBakir97/DevTrust/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/apr"]
+
+[tool.uv.sources]
+repox = { workspace = true }

@@ -1,0 +1,30 @@
+DevTrust planning workspace
+Copyright (c) 2026 Abdullah Bakir
+
+This repository contains planning documents, specifications, and project
+scaffolding for the DevTrust platform. The contents of this planning
+workspace are licensed for the author's use.
+
+INDIVIDUAL PRODUCT LICENSES
+---------------------------
+Each product within DevTrust will adopt its own license at the time of
+public release, in line with the lane assigned in the master plan:
+
+  Open-source products will be released under the Apache License 2.0
+  unless otherwise noted in the product's own LICENSE file:
+
+    - Repo X-ray            (Apache-2.0, planned)
+    - CI Local              (Apache-2.0, planned)
+    - Agent Trace SDK       (Apache-2.0, planned)
+    - WhyChanged            (Apache-2.0, planned)
+
+  Commercial products will ship under a proprietary license with terms
+  to be defined per-product:
+
+    - Smart Test Selector   (Proprietary, planned)
+    - Agent-PR Reviewer     (Proprietary, planned)
+    - Dep Upgrade Pilot     (Proprietary, planned)
+    - TokenCost             (Proprietary, planned)
+    - AgentGuard            (Proprietary, planned)
+
+Until each product ships its own LICENSE file, all rights are reserved.

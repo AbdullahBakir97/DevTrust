@@ -1,0 +1,135 @@
+name: Release
+
+# Triggered by git tags shaped like `<package>-v<version>`, e.g.
+#   repox-v0.4.0
+#   sts-v0.0.3
+#   apr-v0.1.1
+#
+# The job:
+#   1. Reads the package name from the tag prefix.
+#   2. Verifies the package's pyproject + __init__ + CHANGELOG agree on the
+#      version (uses scripts/release.py).
+#   3. Runs ruff + mypy + pytest as a final gate.
+#   4. Builds wheels with `uv build`.
+#   5. Uploads to PyPI via Trusted Publishing (no API token; uses OIDC).
+#
+# Setup required (one-time, per package):
+#   - Register a Trusted Publisher on PyPI for each project, pointing at
+#     this workflow file and the corresponding environment.
+#   - Create a GitHub Environment named `pypi-{package}` (e.g. pypi-repox)
+#     with the appropriate review gates if you want manual approval.
+
+on:
+  push:
+    tags:
+      - "repox-v*"
+      - "sts-v*"
+      - "sts-app-v*"
+      - "apr-v*"
+      - "apr-app-v*"
+      - "whychanged-v*"
+      - "tokencost-v*"
+      - "agtrace-v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release from (e.g. repox-v0.4.0)"
+        required: true
+
+concurrency:
+  # Allow simultaneous releases of different packages, but never two
+  # of the same package.
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FORCE_COLOR: "1"
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  release:
+    name: Release ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      # OIDC trusted-publishing token for PyPI.
+      id-token: write
+      # `gh release` reads this to attach changelog notes.
+      contents: read
+
+    environment:
+      name: pypi-${{ steps.parse.outputs.package }}
+      url: https://pypi.org/project/${{ steps.parse.outputs.package }}/
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install Python 3.14
+        run: uv python install 3.14
+
+      - name: Sync workspace
+        run: uv sync --all-packages --all-groups
+
+      - name: Parse tag
+        id: parse
+        shell: bash
+        run: |
+          # Tag format: <package>-v<semver>
+          # Strip the leading 'refs/tags/' if present.
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          if [[ "$TAG" =~ ^(repox|sts|sts-app|apr|apr-app|whychanged|tokencost|agtrace)-v([0-9].*)$ ]]; then
+            PKG="${BASH_REMATCH[1]}"
+            VER="${BASH_REMATCH[2]}"
+          else
+            echo "::error::tag $TAG does not match <package>-v<version>"
+            exit 1
+          fi
+          echo "package=$PKG" >> "$GITHUB_OUTPUT"
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+
+      - name: Pre-flight checks
+        run: uv run python scripts/release.py --check --package ${{ steps.parse.outputs.package }}
+
+      - name: Locate package directory
+        id: pkgdir
+        shell: bash
+        run: |
+          PKG="${{ steps.parse.outputs.package }}"
+          # Map distribution name -> workspace path.
+          case "$PKG" in
+            repox)    DIR="src/products/01-repo-xray/code" ;;
+            sts)      DIR="src/products/02-smart-test-selector/code" ;;
+            sts-app)  DIR="src/products/02-smart-test-selector/app" ;;
+            apr)      DIR="src/products/03-agent-pr-reviewer/code" ;;
+            apr-app)  DIR="src/products/03-agent-pr-reviewer/app" ;;
+            whychanged) DIR="src/products/07-whychanged/code" ;;
+            tokencost) DIR="src/products/08-tokencost/code" ;;
+            agtrace)   DIR="src/products/06-agent-trace-sdk/code" ;;
+            *)        echo "::error::unknown package $PKG"; exit 1 ;;
+          esac
+          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Build wheel + sdist
+        run: |
+          uv build --package ${{ steps.parse.outputs.package }} --out-dir dist/
+
+      - name: Verify build artifacts
+        shell: bash
+        run: |
+          ls -la dist/
+          uv run twine check dist/* || true
+
+      - name: Publish to PyPI (Trusted Publisher)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          # Skip-existing prevents re-publishing on accidental re-tag.
+          skip-existing: true

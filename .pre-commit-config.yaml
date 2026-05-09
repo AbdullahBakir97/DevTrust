@@ -1,0 +1,61 @@
+# DevTrust monorepo — pre-commit hooks
+# Activate with:  pre-commit install
+
+minimum_pre_commit_version: "3.7.0"
+
+default_language_version:
+  python: python3.14
+
+repos:
+  # ---- Generic hygiene ------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^.*\.repox/architecture\.md$  # generated artifact
+      - id: end-of-file-fixer
+        exclude: ^.*\.repox/architecture\.md$
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=1000"]
+      - id: check-yaml
+        args: ["--allow-multiple-documents"]
+      - id: check-toml
+      - id: check-json
+      - id: check-symlinks
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+        exclude: \.(bat|cmd|ps1|psm1|psd1)$
+      - id: detect-private-key
+
+  # ---- Ruff: lint + format --------------------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.12
+    hooks:
+      - id: ruff-check
+        args: ["--fix"]
+      - id: ruff-format
+
+  # ---- Mypy strict ---------------------------------------------------------
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v2.0.0
+    hooks:
+      - id: mypy
+        # Use the workspace mypy config in pyproject.toml
+        args: ["--config-file=pyproject.toml"]
+        # Mypy needs the deps available to type-check accurately.
+        additional_dependencies:
+          - "pydantic>=2.10"
+          - "typer>=0.15"
+          - "rich>=13.9"
+          - "pathspec>=1.0"
+        # Run only on Python sources to keep pre-commit fast.
+        files: ^src/products/[^/]+/code/src/.*\.py$
+
+  # ---- Conventional commits ------------------------------------------------
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.6.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: ["feat", "fix", "docs", "style", "refactor", "perf", "test", "build", "ci", "chore", "revert"]

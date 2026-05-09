@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/AbdullahBakir97/DevTrust/security/advisories/new
+    about: Please report security issues privately via GitHub Security Advisories — see SECURITY.md for the full policy.
+  - name: General question / discussion
+    url: https://github.com/AbdullahBakir97/DevTrust/discussions
+    about: Have a question or want to discuss something? Use Discussions, not Issues.
