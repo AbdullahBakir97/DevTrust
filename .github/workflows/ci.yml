@@ -114,19 +114,32 @@ jobs:
       - name: Sync workspace
         run: uv sync --all-packages --all-groups
 
-      - name: Run tests with coverage
-        # importlib import mode is required HERE because this single pytest
-        # invocation collects tests from every package; the legacy prepend
-        # mode would hit ImportPathMismatchError on the multiple
-        # tests/conftest.py files. Set via env var so it only affects the
-        # coverage run, not the matrix or local invocations.
-        env:
-          PYTEST_ADDOPTS: "--import-mode=importlib"
+      - name: Run tests with coverage (per-package, --cov-append)
+        # We iterate packages instead of running one big pytest because
+        # pytest tries to register every tests/conftest.py under the same
+        # module name 'tests.conftest', and the second one collides with
+        # 'Plugin already registered under a different name' (--import-mode
+        # =importlib via PYTEST_ADDOPTS doesn't help on pytest 9 -- the
+        # collision happens before the addopts env var is honored).
+        # Per-package runs sidestep the issue: each pytest invocation
+        # only sees ONE conftest. --cov-append accumulates coverage
+        # across runs into a single .coverage data file.
+        shell: bash
         run: |
-          uv run pytest \
-            --cov=src/products \
-            --cov-report=xml \
-            --cov-report=term-missing
+          set -e
+          rm -f .coverage .coverage.*
+          for d in src/products/*/code src/products/*/app; do
+            if [ -d "$d/tests" ]; then
+              echo "=== Coverage: $d ==="
+              uv run pytest "$d/tests" \
+                --cov=src/products \
+                --cov-append \
+                --cov-report= \
+                -q
+            fi
+          done
+          uv run coverage xml
+          uv run coverage report
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
