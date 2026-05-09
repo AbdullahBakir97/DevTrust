@@ -144,12 +144,18 @@ def gate_mypy() -> tuple[bool, str]:
     return code == 0, out.strip()
 
 
-def gate_pytest(pkg: Package) -> tuple[bool, str]:
+def gate_pytest(pkg: Package) -> tuple[bool, str, str]:
+    """Returns (ok, summary_line, full_output_for_failure_diagnosis)."""
     if not pkg.tests.is_dir():
-        return True, "(no tests dir)"
+        return True, "(no tests dir)", ""
     rel = pkg.tests.relative_to(REPO_ROOT)
-    code, out = run(_py("pytest", str(rel), "--no-cov", "-q"))
-    return code == 0, out.strip().splitlines()[-1] if out.strip() else ""
+    # `-v --tb=short` so failures show the actual test name + assertion
+    # text. Without this the gate just says "1 failed" and you have to
+    # re-run with verbose flags to find out which test died -- the
+    # exact problem we hit on the CI matrix.
+    code, out = run(_py("pytest", str(rel), "--no-cov", "-v", "--tb=short"))
+    summary = out.strip().splitlines()[-1] if out.strip() else ""
+    return code == 0, summary, out
 
 
 _STALE_PIN_RE = re.compile(r'assert\s+__version__\s*==\s*["\']([0-9]+\.[0-9]+\.[0-9]+)["\']')
@@ -251,9 +257,15 @@ def cmd_check(args: argparse.Namespace) -> int:
     print()
     print("== Per-package tests ==")
     for pkg in packages:
-        ok, summary = gate_pytest(pkg)
+        ok, summary, full_output = gate_pytest(pkg)
         results.append((f"pytest:{pkg.name}", ok, summary))
         print(f"  {'ok  ' if ok else 'FAIL'}  {pkg.display}  {summary}")
+        if not ok:
+            # Surface the actual failure detail so CI logs (and local
+            # operators) can see WHICH test died and WHY without having
+            # to re-run pytest verbosely. Indented for readability.
+            for line in full_output.splitlines():
+                print(f"        {line}")
 
     failures = metadata_failures + sum(1 for _, ok, _ in results if not ok)
     print()
