@@ -142,9 +142,14 @@ def test_review_engine_empty_when_clean(py_repo: Path) -> None:
 
 
 def test_cli_version_prints_version() -> None:
+    import re
+
     result = runner.invoke(app, ["version"])
     assert result.exit_code == 0
-    assert __version__ in result.stdout
+    # Rich emits ANSI escape codes when CI sets FORCE_COLOR=1; strip them
+    # so the substring check works regardless of terminal styling.
+    plain = re.sub(r"\x1b\[[0-9;]*m", "", result.stdout)
+    assert __version__ in plain
 
 
 def test_cli_review_writes_artifacts(py_repo: Path) -> None:

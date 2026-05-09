@@ -203,9 +203,15 @@ def test_write_markdown_includes_summary_and_new_sections(sample_repo: Path) -> 
 
 
 def test_cli_version() -> None:
+    import re
+
     result = runner.invoke(app, ["version"])
     assert result.exit_code == 0
-    assert __version__ in result.stdout
+    # Rich emits ANSI escape codes when CI sets FORCE_COLOR=1; strip them
+    # so the substring check works regardless of terminal styling. Without
+    # this the version (e.g. '0.4.0') gets split across color escapes.
+    plain = re.sub(r"\x1b\[[0-9;]*m", "", result.stdout)
+    assert __version__ in plain
 
 
 def test_cli_build_writes_artifacts(sample_repo: Path) -> None:

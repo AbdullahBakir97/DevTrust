@@ -153,9 +153,14 @@ def test_default_tracer_writes_to_default_path(
 
 
 def test_cli_version_prints_version() -> None:
+    import re
+
     result = runner.invoke(app, ["version"])
     assert result.exit_code == 0
-    assert __version__ in result.stdout
+    # Rich emits ANSI escape codes when CI sets FORCE_COLOR=1; strip them
+    # so the substring check works regardless of terminal styling.
+    plain = re.sub(r"\x1b\[[0-9;]*m", "", result.stdout)
+    assert __version__ in plain
 
 
 def test_cli_dump_renders_tree(tmp_path: Path) -> None:
