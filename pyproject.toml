@@ -144,12 +144,20 @@ disallow_untyped_defs = false
 # is a CI/orchestration concern; the test runner config should not assume
 # coverage is always on. See .github/workflows/ci.yml for where coverage
 # is actually invoked.
+#
+# `--import-mode=importlib` is required for the multi-package coverage run.
+# Each product has its own `tests/conftest.py`, and the legacy `prepend`
+# import mode tries to register them all under the same `tests.conftest`
+# module, which fails with `ImportPathMismatchError`. importlib mode
+# treats each conftest as its own module rooted at its package, so they
+# don't collide. (Per-package `release.py` runs are unaffected.)
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = [
     "-ra",
     "--strict-config",
     "--strict-markers",
+    "--import-mode=importlib",
 ]
 testpaths = [
     "src/products/*/code/tests",

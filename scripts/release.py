@@ -116,18 +116,31 @@ def run(cmd: list[str], cwd: Path = REPO_ROOT) -> tuple[int, str]:
     return proc.returncode, proc.stdout + proc.stderr
 
 
+# We invoke the gates via `sys.executable -m <tool>` rather than `uv run
+# <tool>`. Reason: when this script itself is invoked from `uv run python
+# scripts/release.py --check`, an inner `uv run` can decide to re-sync
+# the environment (download a different Python, recreate .venv, install
+# fewer packages than the outer `uv sync --all-packages --all-groups`
+# brought in). That broke CI on the matrix runners. Using sys.executable
+# uses whatever Python is currently active -- locally that's the uv-
+# managed venv; in CI it's the matrix Python with the workspace already
+# synced. No re-sync ever happens, so CI matches local exactly.
+def _py(*args: str) -> list[str]:
+    return [sys.executable, "-m", *args]
+
+
 def gate_ruff_check() -> tuple[bool, str]:
-    code, out = run(["uv", "run", "ruff", "check", "."])
+    code, out = run(_py("ruff", "check", "."))
     return code == 0, out.strip()
 
 
 def gate_ruff_format() -> tuple[bool, str]:
-    code, out = run(["uv", "run", "ruff", "format", "--check", "."])
+    code, out = run(_py("ruff", "format", "--check", "."))
     return code == 0, out.strip()
 
 
 def gate_mypy() -> tuple[bool, str]:
-    code, out = run(["uv", "run", "mypy"])
+    code, out = run(_py("mypy"))
     return code == 0, out.strip()
 
 
@@ -135,7 +148,7 @@ def gate_pytest(pkg: Package) -> tuple[bool, str]:
     if not pkg.tests.is_dir():
         return True, "(no tests dir)"
     rel = pkg.tests.relative_to(REPO_ROOT)
-    code, out = run(["uv", "run", "pytest", str(rel), "--no-cov", "-q"])
+    code, out = run(_py("pytest", str(rel), "--no-cov", "-q"))
     return code == 0, out.strip().splitlines()[-1] if out.strip() else ""
 
 

@@ -84,8 +84,12 @@ jobs:
 
       - name: Run preflight (per-package pytest, ruff, mypy)
         # release.py is the single source of truth for what "READY TO RELEASE"
-        # means. Running it here guarantees CI matches what passes locally.
-        run: uv run python scripts/release.py --check
+        # means. `--no-sync` is critical: without it, `uv run` decides to
+        # re-resolve and downloads a different Python version (the project
+        # default from .python-version), wiping the matrix-specific venv we
+        # just synced. release.py itself uses sys.executable internally, so
+        # this single outer `uv run` is the only env activation that fires.
+        run: uv run --no-sync python scripts/release.py --check
 
   # --------------------------------------------------------------------------
   # Coverage: runs once on Linux + Python 3.14. Separate from the matrix so
