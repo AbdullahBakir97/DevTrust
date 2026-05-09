@@ -149,7 +149,29 @@ API keys, GitHub App private keys, webhook secrets, and PyPI tokens are never co
 - **Per-product specs:** `src/products/NN-name/PRODUCT.md`
 - **Per-package READMEs:** `src/products/NN-name/code/README.md` (and `app/README.md` for the GitHub App variants)
 - **Wave 3 explainer:** [`docs/wave-3-overview.md`](docs/wave-3-overview.md)
+- **Landing page (DevTrust Cloud):** [`docs/landing/index.html`](docs/landing/index.html) — single self-contained HTML file. Open it in a browser to preview, drop it on any host (GitHub Pages, Netlify, Vercel, plain S3) when the domain is live.
 - **Master plan:** [`src/docs/`](src/docs/)
+
+---
+
+## DevTrust Cloud — coming soon
+
+Everything in this repo is free, open-source, and self-hostable. You can `pip install` any of the 8 packages today and run them on your own infrastructure forever.
+
+If you'd rather not run two GitHub Apps, manage webhook secrets, host a control plane, and stitch together cross-repo dashboards yourself — **DevTrust Cloud** is the hosted version of the same stack. One install, every product wired together, a fleet-wide view of code trust, AI-cost attribution, agent traces, and incident causality across your whole engineering org.
+
+What Cloud adds on top of the OSS:
+
+- Hosted `sts-app` and `apr-app` — install one GitHub App per org, no infrastructure to run.
+- Cross-repo dashboard — every repo's `repox` architecture model, `apr` review trends, `sts` test-selection efficiency, in one place.
+- Cross-service `agtrace` aggregation and `tokencost` attribution — see which team / feature / customer is burning LLM spend in real time.
+- `whychanged` as a webhook receiver — auto-ranked culprits posted to Slack the moment your incident-management tool fires.
+- SSO, audit logs, role-based access, on-prem option, support SLA, security review.
+
+**Free tier:** all OSS packages, all features, individuals + public repos.
+**Paid tier:** private repos, fleet view, premium rule packs, enterprise auth.
+
+[**Join the waitlist →**](https://devtrust.dev) (early-access pricing being finalized; waitlist members get the first 3 months free)
 
 ---
 

@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="description" content="DevTrust — the trust stack for AI-era engineering. Open-source codebase analysis, smart test selection, AI-aware PR review, agent tracing, LLM cost attribution, and incident causality, in one platform." />
+<title>DevTrust — the trust stack for AI-era engineering</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg-elev: #11141b;
+    --fg: #e8ebf0;
+    --fg-dim: #9aa3b2;
+    --fg-faint: #6b7280;
+    --accent: #7dd3fc;
+    --accent-strong: #38bdf8;
+    --border: #1f242e;
+    --code-bg: #0a0c11;
+    --max: 1080px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-strong); text-decoration: underline; }
+  code, pre { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  code { background: var(--code-bg); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.9em; color: var(--accent); }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.88rem;
+  }
+  pre code { background: transparent; padding: 0; color: var(--fg); }
+
+  /* Layout */
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 1.5rem; }
+  section { padding: 4rem 0; border-top: 1px solid var(--border); }
+  section:first-of-type { border-top: 0; }
+
+  /* Header */
+  header.nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(11,13,18,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: var(--max); margin: 0 auto; padding: 0.9rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .brand { font-weight: 700; letter-spacing: -0.01em; font-size: 1.05rem; }
+  .brand .dot { color: var(--accent); }
+  .nav-links { display: flex; gap: 1.5rem; font-size: 0.9rem; }
+  .nav-links a { color: var(--fg-dim); }
+
+  /* Hero */
+  .hero { padding: 6rem 0 4rem; text-align: left; }
+  .eyebrow {
+    display: inline-block; font-size: 0.78rem; letter-spacing: 0.08em;
+    color: var(--accent); text-transform: uppercase; font-weight: 600;
+    border: 1px solid var(--border); padding: 0.3rem 0.7rem; border-radius: 999px;
+    margin-bottom: 1.5rem;
+  }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    line-height: 1.1; margin: 0 0 1rem; letter-spacing: -0.02em;
+    font-weight: 800;
+  }
+  h1 span { color: var(--accent); }
+  .lede {
+    font-size: 1.15rem; color: var(--fg-dim); max-width: 680px;
+    margin: 0 0 2rem;
+  }
+  .cta-row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+  .btn {
+    display: inline-block; padding: 0.7rem 1.2rem; border-radius: 8px;
+    font-weight: 600; font-size: 0.95rem;
+    transition: transform 0.05s ease, background 0.15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); text-decoration: none; }
+  .btn-primary { background: var(--accent); color: #0a0c11; }
+  .btn-primary:hover { background: var(--accent-strong); color: #0a0c11; }
+  .btn-secondary {
+    color: var(--fg); border: 1px solid var(--border); background: transparent;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Headings */
+  h2 { font-size: 1.75rem; letter-spacing: -0.01em; margin: 0 0 0.5rem; }
+  h3 { font-size: 1.05rem; margin: 0 0 0.5rem; }
+  .section-lede { color: var(--fg-dim); max-width: 680px; margin: 0 0 2.5rem; }
+
+  /* Grid */
+  .grid {
+    display: grid; gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  .card {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    padding: 1.5rem; border-radius: 10px;
+  }
+  .card .pkg {
+    font-family: ui-monospace, monospace; font-size: 0.85rem;
+    color: var(--accent); margin-bottom: 0.5rem;
+  }
+  .card .ver {
+    color: var(--fg-faint); font-size: 0.8rem; font-family: ui-monospace, monospace;
+  }
+  .card p { color: var(--fg-dim); font-size: 0.94rem; margin: 0.5rem 0 0; }
+  .card .wave {
+    display: inline-block; font-size: 0.7rem; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--fg-faint);
+    margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border);
+    width: 100%;
+  }
+
+  /* Cloud comparison */
+  .compare { display: grid; gap: 1.25rem; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 720px) { .compare { grid-template-columns: 1fr; } }
+  .col {
+    border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem;
+  }
+  .col.cloud { background: linear-gradient(180deg, rgba(56,189,248,0.06), transparent); border-color: var(--accent); }
+  .col h3 { font-size: 1.1rem; margin-bottom: 1rem; }
+  .col ul { list-style: none; padding: 0; margin: 0; }
+  .col li {
+    padding: 0.5rem 0; color: var(--fg-dim); font-size: 0.95rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .col li:last-child { border-bottom: 0; }
+  .col li::before { content: "→ "; color: var(--accent); font-weight: 600; }
+  .col .price {
+    color: var(--fg); font-weight: 600; font-size: 1.05rem;
+    margin: 1rem 0 0.5rem;
+  }
+
+  /* Waitlist */
+  .waitlist {
+    background: linear-gradient(180deg, var(--bg-elev), transparent);
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 2.5rem; text-align: center;
+  }
+  .waitlist h2 { margin-bottom: 0.5rem; }
+  .waitlist p { color: var(--fg-dim); max-width: 520px; margin: 0 auto 1.5rem; }
+  .waitlist form { display: flex; gap: 0.5rem; max-width: 460px; margin: 0 auto; flex-wrap: wrap; }
+  .waitlist input {
+    flex: 1 1 240px; padding: 0.7rem 0.9rem; border-radius: 8px;
+    background: var(--code-bg); color: var(--fg);
+    border: 1px solid var(--border); font-size: 0.95rem;
+  }
+  .waitlist input:focus { outline: none; border-color: var(--accent); }
+
+  footer {
+    border-top: 1px solid var(--border); padding: 2.5rem 0; margin-top: 2rem;
+    color: var(--fg-faint); font-size: 0.88rem;
+  }
+  footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">DevTrust<span class="dot">.</span></div>
+    <nav class="nav-links">
+      <a href="#products">Products</a>
+      <a href="#cloud">Cloud</a>
+      <a href="#waitlist">Waitlist</a>
+      <a href="https://github.com/AbdullahBakir97/DevTrust">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Open source · Apache 2.0 · 8 packages on PyPI</span>
+    <h1>The trust stack<br/>for <span>AI-era engineering</span>.</h1>
+    <p class="lede">
+      Eight small, opinionated, production-grade tools that give engineering
+      teams a coherent answer to one question: as AI writes more of the
+      code, how do we keep trust in what ships? Each tool stands alone.
+      Together they're a platform — from PR to production.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="#waitlist">Join Cloud waitlist</a>
+      <a class="btn btn-secondary" href="https://github.com/AbdullahBakir97/DevTrust">Browse the code →</a>
+    </div>
+  </div>
+</section>
+
+<section id="products">
+  <div class="wrap">
+    <h2>Eight packages. Three shipped waves.</h2>
+    <p class="section-lede">
+      Each one is free, open-source, and <code>pip install</code>-able today.
+      Drop them into your CI, your GitHub Apps, your SDKs.
+    </p>
+
+    <div class="grid">
+
+      <div class="card">
+        <div class="pkg">repox <span class="ver">v0.4.0</span></div>
+        <h3>Repo X-ray</h3>
+        <p>A portable architecture model of any codebase. Files, imports, symbols, and function-call edges across Python + JavaScript + TypeScript via tree-sitter. The model every other DevTrust tool consumes.</p>
+        <span class="wave">Wave 1 — codebase understanding</span>
+      </div>
+
+      <div class="card">
+        <div class="pkg">sts <span class="ver">v0.0.3</span></div>
+        <h3>Smart Test Selector</h3>
+        <p>Given a code change, decide which tests must run. Transitive-import-aware, framework-detection (pytest, jest, vitest, gotest, cargo), reads <code>repox</code> artifacts.</p>
+        <span class="wave">Wave 1</span>
+      </div>
+
+      <div class="card">
+        <div class="pkg">apr <span class="ver">v0.2.0</span></div>
+        <h3>Agent-PR Reviewer</h3>
+        <p>Deterministic + AI-pattern review for pull requests. Python and JS/TS rule packs plus an opt-in LLM-backed diff-comprehension check and a deterministic hallucinated-symbol rule that walks the call graph.</p>
+        <span class="wave">Wave 1</span>
+      </div>
+
+      <div class="card">
+        <div class="pkg">sts-app <span class="ver">v0.0.3</span></div>
+        <h3>STS GitHub App</h3>
+        <p>FastAPI service that runs <code>sts</code> on every PR. JWT-signed installation tokens, HMAC webhook verification, tarball clone (no <code>git</code> binary needed), sticky PR comments.</p>
+        <span class="wave">Wave 2 — ship surfaces</span>
+      </div>
+
+      <div class="card">
+        <div class="pkg">apr-app <span class="ver">v0.0.1</span></div>
+        <h3>APR GitHub App</h3>
+        <p>Same shape as <code>sts-app</code> — webhook receiver, GitHub App auth, sticky PR comment with findings. Drives the <code>apr</code> engine on every pull request.</p>
+        <span class="wave">Wave 2</span>
+      </div>
+
+      <div class="card">
+        <div class="pkg">agtrace <span class="ver">v0.0.2</span></div>
+        <h3>Agent Trace SDK</h3>
+        <p>Spans, events, and tool calls for LLM-driven workflows. ContextVar-based attribution that's safe across threads + async. JSONL append-only event store.</p>
+        <span class="wave">Wave 3 — open &amp; run</span>
+      </div>
+
+      <div class="card">
+        <div class="pkg">whychanged <span class="ver">v0.1.0</span></div>
+        <h3>WhyChanged</h3>
+        <p>Production diff-detective for incident response. Pluggable change providers (git history + GitHub Deployments shipped). Ranks the changes most likely to be your culprit.</p>
+        <span class="wave">Wave 3</span>
+      </div>
+
+      <div class="card">
+        <div class="pkg">tokencost <span class="ver">v0.0.3</span></div>
+        <h3>TokenCost</h3>
+        <p>Financial-grade attribution for LLM spend. Capture every Anthropic / OpenAI call with team / user / feature attribution. Money in integer micro-USD — no float drift across millions of rows.</p>
+        <span class="wave">Wave 3</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <h2>Install one. Or all eight.</h2>
+    <p class="section-lede">Each package versions independently. Picking just one doesn't drag the rest in.</p>
+<pre><code>pip install repox sts apr agtrace whychanged tokencost
+# or just the GitHub Apps:
+pip install sts-app apr-app</code></pre>
+  </div>
+</section>
+
+<section id="cloud">
+  <div class="wrap">
+    <h2>Self-host or let us run it.</h2>
+    <p class="section-lede">
+      Everything above is free, forever. DevTrust Cloud is the hosted
+      version — same code, but we run the apps, aggregate across your
+      whole org, and add the things teams need (auth, audit, alerting).
+    </p>
+
+    <div class="compare">
+      <div class="col">
+        <h3>Open source — free</h3>
+        <ul>
+          <li>All 8 packages on PyPI</li>
+          <li>Run the GitHub Apps yourself</li>
+          <li>Per-repo <code>.repox</code>/<code>.apr</code>/<code>.sts</code> artifacts</li>
+          <li>JSONL stores you process yourself</li>
+          <li>CLI + library, full source</li>
+          <li>Apache-2.0, no usage caps</li>
+        </ul>
+        <div class="price">$0 / forever</div>
+      </div>
+      <div class="col cloud">
+        <h3>DevTrust Cloud — coming soon</h3>
+        <ul>
+          <li>Hosted GitHub Apps — install in one click</li>
+          <li>Cross-repo trust dashboard for the whole org</li>
+          <li>Cross-service <code>agtrace</code> + <code>tokencost</code> aggregation</li>
+          <li><code>whychanged</code> as a webhook receiver, posts to Slack</li>
+          <li>SSO, audit logs, role-based access</li>
+          <li>Premium rule packs + support SLA</li>
+        </ul>
+        <div class="price">Early access · waitlist pricing</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="waitlist">
+  <div class="wrap">
+    <div class="waitlist">
+      <h2>Join the Cloud waitlist.</h2>
+      <p>Early-access pricing being finalized. Waitlist members get the first 3 months free, plus first dibs on team / enterprise plans.</p>
+      <!--
+        Replace this <form> action with your real waitlist endpoint
+        (Tally, Typeform, ConvertKit, Substack, Plain HTML form to a
+        cheap webhook, etc). For now it just opens a mailto: as fallback.
+      -->
+      <form action="mailto:hello@devtrust.dev" method="post" enctype="text/plain">
+        <input type="email" name="email" placeholder="you@company.com" required />
+        <button type="submit" class="btn btn-primary">Get early access</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section id="why">
+  <div class="wrap">
+    <h2>Why this exists.</h2>
+    <p class="section-lede">
+      AI is writing more of every codebase, every quarter. Reviewing diffs
+      gets harder. Test suites get noisier. Cost attribution gets murky.
+      Production incidents get harder to root-cause when "what changed?"
+      includes "the model picked a different completion."
+    </p>
+    <p class="section-lede">
+      DevTrust is a single coherent answer to that. Eight tools, one
+      design language, one trust narrative, all open-source. Run them
+      yourself, or let us run them for you.
+    </p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <strong>DevTrust</strong> — open-source trust stack for AI-era engineering.<br/>
+      Apache-2.0 · Built by <a href="https://github.com/AbdullahBakir97">Abdullah Bakir</a>
+    </div>
+    <div>
+      <a href="https://github.com/AbdullahBakir97/DevTrust">GitHub</a> ·
+      <a href="https://github.com/AbdullahBakir97/DevTrust/blob/main/RELEASE.md">Releases</a> ·
+      <a href="#waitlist">Cloud waitlist</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
