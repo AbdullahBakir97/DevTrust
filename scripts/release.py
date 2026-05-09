@@ -2,9 +2,9 @@
 """Pre-flight release checks for the DevTrust monorepo.
 
 Usage:
-    python scripts/release.py --check                # gate run only
-    python scripts/release.py --package repox        # check one package
-    python scripts/release.py --tag-suggestion repox # print the tag string we'll push
+    python scripts/release.py --check                          # all gates
+    python scripts/release.py --package devtrust-repox         # one package
+    python scripts/release.py --tag-suggestion devtrust-repox  # print tag
 
 What this does (and only this):
 
@@ -47,6 +47,43 @@ class Package:
         return f"{self.name} ({self.pyproject.parent.relative_to(REPO_ROOT)})"
 
 
+def _resolve_module_init(pkg_root: Path, data: dict[str, object]) -> Path:
+    """Find the module's __init__.py from the pyproject's wheel config.
+
+    Reads `[tool.hatch.build.targets.wheel].packages` (e.g. ["src/repox"])
+    and returns `<pkg_root>/<that>/__init__.py`. This is the authoritative
+    source -- the distribution name (e.g. "devtrust-repox") and the
+    Python module name ("repox") can differ, so we cannot derive one
+    from the other by string transformation.
+
+    Falls back to `<pkg_root>/src/<dist_name_with_underscores>/__init__.py`
+    if the hatch config is missing, which preserves behavior on packages
+    that haven't yet been rebranded.
+    """
+    tool = data.get("tool", {})
+    if isinstance(tool, dict):
+        hatch = tool.get("hatch", {})
+        if isinstance(hatch, dict):
+            build = hatch.get("build", {})
+            if isinstance(build, dict):
+                targets = build.get("targets", {})
+                if isinstance(targets, dict):
+                    wheel = targets.get("wheel", {})
+                    if isinstance(wheel, dict):
+                        pkgs = wheel.get("packages", [])
+                        if isinstance(pkgs, list) and pkgs:
+                            first = pkgs[0]
+                            if isinstance(first, str) and first:
+                                return pkg_root / first / "__init__.py"
+    # Fallback: legacy convention dist_name.replace("-", "_")
+    project = data.get("project", {})
+    dist_name = project.get("name", "") if isinstance(project, dict) else ""
+    if not isinstance(dist_name, str):
+        dist_name = ""
+    module_name = dist_name.replace("-", "_")
+    return pkg_root / "src" / module_name / "__init__.py"
+
+
 def discover_packages() -> list[Package]:
     """Find every uv-workspace member under `src/products/*/{code,app}/`."""
     out: list[Package] = []
@@ -63,10 +100,7 @@ def discover_packages() -> list[Package]:
             dist_name = project.get("name")
             if not isinstance(dist_name, str):
                 continue
-            # Convention: distribution name == importable package name
-            # except dashes -> underscores.
-            module_name = dist_name.replace("-", "_")
-            init_py = pkg_root / "src" / module_name / "__init__.py"
+            init_py = _resolve_module_init(pkg_root, data)
             out.append(
                 Package(
                     name=dist_name,
@@ -297,14 +331,20 @@ def main() -> int:
         "--package",
         type=str,
         default=None,
-        help="restrict to one package (e.g. repox, sts, sts-app, apr, apr-app)",
+        help=(
+            "restrict to one package by its PyPI distribution name "
+            "(e.g. devtrust-repox, devtrust-sts, devtrust-apr-app)"
+        ),
     )
     parser.add_argument(
         "--tag-suggestion",
         dest="tag_package",
         type=str,
         default=None,
-        help="print the tag string for one package and exit",
+        help=(
+            "print the tag string for one package and exit "
+            "(e.g. --tag-suggestion devtrust-apr -> 'devtrust-apr-v0.2.0')"
+        ),
     )
     args = parser.parse_args()
 
