@@ -145,19 +145,21 @@ disallow_untyped_defs = false
 # coverage is always on. See .github/workflows/ci.yml for where coverage
 # is actually invoked.
 #
-# `--import-mode=importlib` is required for the multi-package coverage run.
-# Each product has its own `tests/conftest.py`, and the legacy `prepend`
-# import mode tries to register them all under the same `tests.conftest`
-# module, which fails with `ImportPathMismatchError`. importlib mode
-# treats each conftest as its own module rooted at its package, so they
-# don't collide. (Per-package `release.py` runs are unaffected.)
+# About import modes: the per-package matrix runs use the default `prepend`
+# import mode (works fine because each package's tests are run in isolation,
+# no cross-package conftest collision). The coverage job — which collects
+# tests from ALL packages in one pytest invocation — sets PYTEST_ADDOPTS=
+# "--import-mode=importlib" via env var so that each package's
+# tests/conftest.py is treated as its own module rooted at its package, no
+# `ImportPathMismatchError`. Keeping importlib mode out of workspace addopts
+# means individual package test runs (and any ad-hoc `pytest tests/x.py`)
+# behave identically to what a downstream user of the package would get.
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = [
     "-ra",
     "--strict-config",
     "--strict-markers",
-    "--import-mode=importlib",
 ]
 testpaths = [
     "src/products/*/code/tests",

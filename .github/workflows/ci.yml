@@ -115,6 +115,13 @@ jobs:
         run: uv sync --all-packages --all-groups
 
       - name: Run tests with coverage
+        # importlib import mode is required HERE because this single pytest
+        # invocation collects tests from every package; the legacy prepend
+        # mode would hit ImportPathMismatchError on the multiple
+        # tests/conftest.py files. Set via env var so it only affects the
+        # coverage run, not the matrix or local invocations.
+        env:
+          PYTEST_ADDOPTS: "--import-mode=importlib"
         run: |
           uv run pytest \
             --cov=src/products \
