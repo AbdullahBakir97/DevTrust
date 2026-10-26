@@ -17,7 +17,7 @@ Each tool stands alone, ships to PyPI independently, and works with nothing but 
 
 ## Quick start
 
-All eight packages are live on PyPI.
+All nine packages are on PyPI.
 
 ```bash
 pip install devtrust-repox       # codebase architecture model
@@ -26,6 +26,7 @@ pip install devtrust-apr         # AI-era PR reviewer
 pip install devtrust-agtrace     # agent-aware tracing SDK
 pip install devtrust-whychanged  # production diff-detective
 pip install devtrust-tokencost   # LLM cost attribution
+pip install devtrust-agentguard  # policy-as-code runtime for AI agents
 ```
 
 GitHub Apps for the CI surfaces:
@@ -87,7 +88,7 @@ Five products. One coherent run. No agents required.
 
 ## What's in here
 
-Eight installable packages across three shipped waves, each with its own `pyproject.toml`, `README.md`, `CHANGELOG.md`, tests, and PyPI release.
+Nine installable packages across four waves (three shipped, one in progress), each with its own `pyproject.toml`, `README.md`, `CHANGELOG.md`, tests, and PyPI release.
 
 > **Naming convention:** distribution names on PyPI are namespaced under `devtrust-` (e.g. `pip install devtrust-repox`) to avoid collisions with common short names. The Python module names and CLI commands stay short — once installed, you `import repox` and run `repox build .` exactly as you'd expect.
 
@@ -116,9 +117,11 @@ Eight installable packages across three shipped waves, each with its own `pyproj
 
 → See [`docs/wave-3-overview.md`](docs/wave-3-overview.md) for the trio explainer.
 
-### Wave 4 — queued
+### Wave 4 — in progress
 
-[`agentguard`](src/products/09-agentguard/PRODUCT.md) — runtime governance + policy-as-code for AI agent tools. Spec written; build pending.
+| PyPI package | CLI / module | What it does | Latest |
+|---|---|---|---|
+| `devtrust-agentguard` | [`agentguard`](src/products/09-agentguard/code/) | Policy-as-code runtime for AI agents: ordered allow / deny / require-approval rules, default-deny, and an append-only JSONL audit log. Initial release. | **0.0.1** |
 
 ---
 
@@ -153,7 +156,7 @@ uv sync --all-packages --all-groups
 uv run python scripts/release.py --check
 ```
 
-This is the same gate `release.yml` runs in CI before publishing to PyPI. A clean run looks like:
+This is the same gate `release.yml` runs in CI before publishing to PyPI. A clean run looks like this (sample output; counts grow as tests are added):
 
 ```
 == Per-package metadata check ==
@@ -165,6 +168,7 @@ This is the same gate `release.yml` runs in CI before publishing to PyPI. A clea
   ok    agtrace    @ 0.0.2
   ok    whychanged @ 0.1.0
   ok    tokencost  @ 0.0.3
+  ok    agentguard @ 0.0.1
 == Workspace gates ==
   ok    ruff check
   ok    ruff format --check
@@ -178,6 +182,7 @@ This is the same gate `release.yml` runs in CI before publishing to PyPI. A clea
   ok    agtrace     18 passed
   ok    whychanged  31 passed
   ok    tokencost   36 passed
+  ok    agentguard  29 passed
 READY TO RELEASE
 ```
 
@@ -235,7 +240,7 @@ API keys, GitHub App private keys, webhook secrets, and PyPI tokens are never co
 
 ## DevTrust Cloud — coming soon
 
-Everything in this repo is free, open-source, and self-hostable. You can `pip install` any of the 8 packages today and run them on your own infrastructure forever.
+Everything in this repo is free, open-source, and self-hostable. You can `pip install` any of the 9 packages today and run them on your own infrastructure forever.
 
 If you'd rather not run two GitHub Apps, manage webhook secrets, host a control plane, and stitch together cross-repo dashboards yourself — **DevTrust Cloud** is the hosted version of the same stack. One install, every product wired together, a fleet-wide view of code trust, AI-cost attribution, agent traces, and incident causality across your whole engineering org.
 
@@ -261,7 +266,7 @@ What Cloud adds on top of the OSS:
 | Wave 1 (codebase understanding) | **Shipped** · on PyPI | `devtrust-repox` 0.4.0, `devtrust-sts` 0.0.3, `devtrust-apr` 0.2.0 |
 | Wave 2 (ship surfaces) | **Shipped** · on PyPI | `devtrust-sts-app` 0.0.3, `devtrust-apr-app` 0.0.1 |
 | Wave 3 (open & run) | **Shipped** · on PyPI | `devtrust-agtrace` 0.0.2, `devtrust-whychanged` 0.1.0, `devtrust-tokencost` 0.0.3 |
-| Wave 4 (compliance & governance) | In progress | `devtrust-agentguard` (scaffold) |
+| Wave 4 (compliance & governance) | In progress · on PyPI | `devtrust-agentguard` 0.0.1 (initial release) |
 
 ### Spec'd but not yet implemented
 

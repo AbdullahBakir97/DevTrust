@@ -67,5 +67,5 @@ Numbers are estimates, not commitments. Each session = one focused work block.
 ## What we're working on RIGHT NOW
 
 **Active:** Repo X-ray v0.0.2 → v0.1
-**Owner:** Abdullah (with Claude as build partner)
+**Owner:** Abdullah
 **Tester:** Abdullah + one developer friend (TBD intro)
