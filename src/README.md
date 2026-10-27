@@ -15,8 +15,6 @@ This is the **planning workspace** for the DevTrust platform — not the product
 | `docs/` | Master plan (Word + Markdown), roadmap, decisions log |
 | `products/` | One-pager spec for each of the 8 products + shared platform |
 | `waves/` | Quarter-by-quarter execution plan for the 4 build waves |
-| `memory/` | Long-lived context for AI assistants working on this project |
-| `.claude/` | Claude Code / Cowork environment (settings, commands, agents) |
 
 When the actual product code starts (Wave 1), each `products/NN-name/` folder will gain a `code/` subdirectory or be moved into its own repository, depending on the lane (OSS goes to its own public repo, paid SaaS lives in a monorepo).
 

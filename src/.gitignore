@@ -38,8 +38,3 @@ secrets/
 ~$*.docx
 ~$*.xlsx
 ~$*.pptx
-
-# Claude session-specific (keep configs, drop runtime)
-.claude/sessions/
-.claude/cache/
-.claude/.tmp/

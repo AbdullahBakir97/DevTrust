@@ -71,21 +71,13 @@ secrets/
 .tokencost/
 .agtrace/
 
-# === AI working memory ===
-# Personal memory files used by Claude during development. Public release
-# would expose work-style preferences, so keep them local. Re-enable per
-# file if you decide a particular memory should be public docs.
+# === Local notes ===
 src/memory/
 
 # === Office working artifacts ===
 ~$*.docx
 ~$*.xlsx
 ~$*.pptx
-
-# === Claude / Cowork session state ===
-.claude/sessions/
-.claude/cache/
-.claude/.tmp/
 
 # === Node (in case any product needs JS tooling) ===
 node_modules/
